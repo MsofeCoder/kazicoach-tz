@@ -2,7 +2,7 @@
   "name": "KaziCoach TZ",
   "short_name": "KaziCoach",
   "description": "Private Tanzanian public-service interview practice.",
-  "start_url": "/",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#f3f5ef",
   "theme_color": "#073c35",

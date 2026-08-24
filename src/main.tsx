@@ -13,5 +13,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 );
 
 if ('serviceWorker' in navigator && import.meta.env.PROD) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => undefined));
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register(new URL('./sw.js', window.location.href).href).catch(() => undefined);
+  });
 }

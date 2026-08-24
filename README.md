@@ -49,6 +49,16 @@ npm run build
 
 Before broad public launch, add Cloudflare Turnstile and durable per-IP/user rate limiting to the AI route.
 
+## Deploy to GitHub Pages (static, no AI)
+
+The app is built with a relative Vite base (`./`) so it works under the project sub-path:
+
+- Site URL: `https://<your-username>.github.io/kazicoach-tz/`
+- Enabled: Repo → Settings → Pages → Source **GitHub Actions** (or push to a `gh-pages` branch).
+- The included `.github/workflows/deploy.yml` builds with `npm ci && npm run build`, runs tests, and publishes `dist` via `actions/deploy-pages`.
+
+GitHub Pages is static-only, so the optional AI "Cloud coach" route (`functions/api/generate.ts`) is **not available** there; the built-in offline question generation keeps working.
+
 ## Privacy model
 
 - Core app and scoring run in the browser.
