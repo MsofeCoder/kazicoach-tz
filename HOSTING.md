@@ -22,11 +22,11 @@ works fully offline-first, but the AI coach button and error log stay off).
 
 | Host | Price | Functions? | Verdict |
 |---|---|---|---|
-| **Cloudflare Pages** | **$0 forever** | ✅ Yes (100k req/day) | **Recommended** |
-| GitHub Pages | $0 | ❌ No | Already deployed as a demo mirror; AI route disabled |
-| Netlify Free | $0 | ✅ Yes (limited) | Works, but 100GB bandwidth cap & slower Functions |
-| Vercel Hobby | $0 | ✅ Yes | Works, but no easy KV binding + less generous than CF |
-| Firebase Hosting + Cloud Functions | $0 spark plan | ⚠️ Functions separate & more setup | Overkill for this project |
+| **Cloudflare Pages** | **$0 forever** | Yes (100k req/day) | Recommended |
+| GitHub Pages | $0 | No | Already deployed as a demo mirror; AI route disabled |
+| Netlify Free | $0 | Yes (limited) | Works, but 100GB bandwidth cap and slower Functions |
+| Vercel Hobby | $0 | Yes | Works, but no easy KV binding and less generous than CF |
+| Firebase Hosting + CF | $0 spark plan | Functions separate | Overkill for this project |
 
 **Recommendation: Cloudflare Pages free tier.** It is the only host that
 natively runs the existing `functions/` directory, gives a free `*.pages.dev`
@@ -56,6 +56,82 @@ limiting via the same KV products — for $0.
 | KV storage (rate limit counters) | $0 |
 | PostHog analytics free tier (1M events/mo) | $0 |
 | **TOTAL** | **$0** |
+
+---
+
+## 3. Deploy to Cloudflare Pages (free) — step by step
+
+Prerequisite: the code is already on GitHub
+(`MsofeCoder/kazicoach-tz`, branch `main`) with a working CI quality gate.
+
+1. Create a free account at **https://dash.cloudflare.com/sign-up**.
+2. Left sidebar → **Workers & Pages** → **Create** → **Pages** → **Connect to Git**.
+3. Authorize GitHub and pick the **MsofeCoder/kazicoach-tz** repository.
+4. Framework preset: **Vite** (or leave custom).
+   - Build command: `npm run build`
+   - Build output directory: `dist`
+5. The `functions/` folder is picked up automatically (it is for a
+   `functions/` directory at the repo root).
+6. Click **Save and Deploy**. After ~2 minutes the app is public at
+   **`https://<your-project>.pages.dev`** — share that URL.
+
+### 3.1 Production environment variables (Settings → Environment variables)
+
+| Variable | Required? | Where from | Notes |
+|---|---|---|---|
+| `GEMINI_API_KEY` | Only for AI coach | Google AI Studio | Encrypted, never in browser |
+| `GEMINI_MODEL` | No | — | Default `gemini-2.5-flash` |
+| `TURNSTILE_SECRET_KEY` | Only for AI abuse protection | Cloudflare | Must also set `TURNSTILE_SITE_KEY` |
+| `TURNSTILE_SITE_KEY` | Only for AI abuse protection | Cloudflare | Public widget key |
+| `RATE_LIMIT_MAX` | No | — | Default 10 req/hour/IP |
+| `VITE_PUBLIC_POSTHOG_KEY` | Only for analytics | PostHog | Public key (safe by design) |
+| `VITE_PUBLIC_POSTHOG_HOST` | No | — | Default `https://us.i.posthog.com` |
+
+Any variable beginning with `VITE_` is intentionally public and read by the
+browser. Everything else stays server-side.
+
+### 3.2 Durable rate limiting (recommended)
+
+The AI route rate-limits per-IP. Without a KV binding it falls back to an
+in-memory per-isolate counter, which is still fine for a pilot.
+
+```bash
+npx wrangler kv namespace create RATE_LIMIT_KV
+```
+
+Then in the Pages dashboard: **Settings → Functions → KV namespace bindings →
+Add binding** → variable name `RATE_LIMIT_KV`, select the namespace created
+above, and redeploy.---
+
+## 4. PostHog — free usage monitoring setup
+
+PostHog's free tier includes **1 million events/month and 5,000 sessions** — far
+more than an interview-prep pilot needs (a heavy user might generate ~20–40
+events; 30 days of a 1,000-user pilot is roughly 40k events).
+
+### 4.1 Create the account and project
+
+1. Sign up at **https://posthog.com/signup** (GitHub/Google login; free plan).
+   - Choose **US Cloud** (closest to Tanzania) or EU Cloud. If you pick EU,
+     set `VITE_PUBLIC_POSTHOG_HOST=https://eu.i.posthog.com` later.
+2. In PostHog, create a project named **"KaziCoach TZ"**.
+3. Copy **Project settings → Project API key** — the value starting with
+   `phc_...` → this is `VITE_PUBLIC_POSTHOG_KEY`.
+4. Note the host for your cloud region:
+   US → `https://us.i.posthog.com`, EU → `https://eu.i.posthog.com`.
+
+### 4.2 PostHog privacy settings (do this before going live)
+
+To keep the app honest ("no personal content is ever sent to analytics"):
+
+- **Product analytics → Person profiles → turn OFF.** The app already sends
+  `person_profiles: 'never'` and memory persistence, so no profiles/cookies.
+- **Privacy & security → IP logging → OFF** (anonymize addresses).
+- **Data ingestion → autocapture → OFF** (the app also disables it client-side).
+- **Session replay → OFF** (the app disables it client-side).
+- **Data retention** → set to 30 days if you only want to validate the pilot.
+- **Data capture → Domain allow-list** → add your `*.pages.dev` domain so only
+  real visitors can send events.
 
 ### 4.3 Add the PostHog environment variables in Cloudflare Pages
 
@@ -93,6 +169,11 @@ the anonymized events wired in `src/lib/analytics.ts` are sent:
 1. **Product analytics → Trends** → choose `$pageview` → page views per day.
 2. **Product analytics → Trends** → `practice_started` or
    `practice_attempt_completed` → build the onboarding → practice funnel by
+   selecting both events and "funnel" mode.
+3. **Data management → Events** → live event stream; every event shows only the
+   sanitized properties from 4.4.
+4. Privacy check: click any event → expand properties → confirm there is no
+   `name`, `jobPosition`, or content field. There must not be one.
 ---
 
 ## 5. PostHog ingest via your own domain (optional, more private)
@@ -152,25 +233,3 @@ personalization (never leaves the device)** vs **anonymous product telemetry
 | Bandwidth abuse | Add a Cloudflare WAF rate rule (free plan includes basic protection) |
 | PostHog > 1M events/mo | PostHog's paid tier, or self-hosted Umami/Plausible on a cheap VPS |
 | Custom domain | Register with any registrar and proxy via Cloudflare (DNS proxy free) |
-   selecting both events and "funnel" mode.
-3. **Data management → Events** → live event stream; every event shows only the
-   sanitized properties from 4.4.
-4. Privacy check: click any event → expand properties → confirm there is no
-   `name`, `jobPosition`, or content field. There must not be one.
----
-
-## 3. Deploy to Cloudflare Pages (free) — step by step
-
-Prerequisite: the code is already on GitHub
-(`MsofeCoder/kazicoach-tz`, branch `main`) with a working CI quality gate.
-
-1. Create a free account at **https://dash.cloudflare.com/sign-up**.
-2. Left sidebar → **Workers & Pages** → **Create** → **Pages** → **Connect to Git**.
-3. Authorize GitHub and pick the **MsofeCoder/kazicoach-tz** repository.
-4. Framework preset: **Vite** (or leave custom).
-   - Build command: `npm run build`
-   - Build output directory: `dist`
-5. Check the `functions/` folder is picked up automatically (it is for a
-   `functions/` directory at the repo root).
-6. Click **Save and Deploy**. After ~2 minutes the app is public at
-   **`https://<your-project>.pages.dev`** — share that URL.
