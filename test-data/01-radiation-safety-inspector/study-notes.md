@@ -1,0 +1,2 @@
+# Study notes
+ALARA means keeping exposure as low as reasonably achievable. Practical controls include time, distance and shielding. A structured inspection covers preparation, opening meeting, document review, observation, interviews, calibrated measurements, close-out, reporting and follow-up. In an emergency: stop unsafe work, control access, assess safely, notify authorities and document actions.

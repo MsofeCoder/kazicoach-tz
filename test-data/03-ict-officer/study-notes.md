@@ -1,0 +1,2 @@
+# Study notes
+A good incident process is Identify, Contain, Resolve, Recover and Review. Before changing production: confirm authorization, backup or rollback, expected impact and communication. Least privilege gives only the access needed for duties. Backups must be monitored and restoration tested. Help desk: clarify, assess urgency, document, resolve safely and confirm with the user.

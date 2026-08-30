@@ -1,0 +1,2 @@
+# Study notes
+A strong HR record must be accurate, complete, current, confidential and available only to authorized persons. Recruitment should follow approved criteria and preserve an audit trail. When handling a complaint: listen, record facts, explain the procedure, protect confidentiality and escalate correctly. Use STAR for competency examples: Situation, Task, Action and Result.
