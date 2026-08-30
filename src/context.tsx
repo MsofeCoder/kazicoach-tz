@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useRef, useState, type R
 import type { AppState, Attempt, PracticeMode, QuestionCategory, View } from './types';
 import { loadState, saveState, updateStreak } from './lib/storage';
 import { mergeBackup, mirrorBackup, recoverBackup } from './lib/backup';
+import { track } from './lib/analytics';
 
 interface AppContextValue {
   state: AppState;
@@ -58,12 +59,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setPracticeMode,
     practiceCategory,
     startPractice: (mode = 'oral', category = 'all') => {
+      track('practice_started', { mode, category });
       setPracticeMode(mode);
       setPracticeCategory(category);
       setView('practice');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     },
     recordAttempt: (attempt) => {
+      track('practice_attempt_completed', { mode: attempt.mode, score: attempt.score, category: attempt.category });
       setState(current => {
         const activity = updateStreak(current);
         const xpEarned = 14 + Math.round(attempt.score / 8) + (attempt.score >= 80 ? 8 : 0);

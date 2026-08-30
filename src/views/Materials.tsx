@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useApp } from '../context';
+import { track } from '../lib/analytics';
 import { createLocalQuestions, extractMaterial } from '../lib/materials';
 import { oralBankFor } from '../lib/personalization';
 import { fetchAiConfig, loadTurnstile, renderTurnstile, type AiConfig } from '../lib/turnstile';
@@ -113,6 +114,7 @@ export default function Materials() {
     const cards = createLocalQuestions(selected.extractedText, selected.name);
     if (!cards.length) { notify('I need longer complete sentences in this material to create local cards.'); return; }
     setState(current => ({ ...current, customQuestions: [...cards, ...current.customQuestions].slice(0, 60) }));
+    track('materials_generated', { source: 'local' });
     notify(`${cards.length} local practice cards created — no data left your device.`);
   };
 
@@ -137,6 +139,7 @@ export default function Materials() {
       if (!cards.length) throw new Error('The cloud response did not contain valid practice cards.');
       setState(current => ({ ...current, customQuestions: [...cards, ...current.customQuestions].slice(0, 60) }));
       setAiStatus('ready');
+      track('materials_generated', { source: 'ai' });
       notify(`${cards.length} AI-assisted cards added. Please verify their facts.`);
     } catch (error) {
       setAiStatus('offline');

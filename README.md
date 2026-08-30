@@ -71,6 +71,9 @@ No third-party error service receives any data, keeping the private-mode promise
 
 ## Deploy to Cloudflare Pages
 
+Full step-by-step free hosting + free PostHog usage monitoring plan:
+**see [`HOSTING.md`](./HOSTING.md)**.
+
 1. Push this directory to GitHub.
 2. Create a Cloudflare Pages project.
 3. Build command: `npm run build`
@@ -101,7 +104,7 @@ No third-party error service receives any data, keeping the private-mode promise
 - AI generation sends selected text only after explicit confirmation.
 - API keys remain server-side.
 - Name, role, document text and progress are stored only in browser `localStorage`; users can export or delete the entire private workspace.
-- No analytics or account database is active in private mode.
+- No analytics or account database is active in private mode. Site operators may enable optional anonymous usage analytics (page views + feature counts only, never user content) — see `HOSTING.md`.
 
 ## Content warning
 

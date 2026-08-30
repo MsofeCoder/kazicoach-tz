@@ -4,6 +4,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useApp } from './context';
+import { trackPageView } from './lib/analytics';
 import type { View } from './types';
 import Dashboard from './views/Dashboard';
 import Practice from './views/Practice';
@@ -145,6 +146,7 @@ export default function App() {
   useEffect(() => {
     const titles: Record<View, string> = { dashboard: 'Today', practice: 'Practice', materials: 'Materials', progress: 'Progress', settings: 'Settings' };
     document.title = state.profile ? `${titles[view]} — KaziCoach TZ` : 'Private setup — KaziCoach TZ';
+    trackPageView(state.profile ? view : 'onboarding');
   }, [view, state.profile]);
 
   if (!state.profile) return <Onboarding />;

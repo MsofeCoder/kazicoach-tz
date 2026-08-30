@@ -61,10 +61,14 @@ try {
     } else {
       console.log('✓ App shell contains the expected brand markup.');
     }
-    // Every hashed asset referenced by the shell must resolve (broken-chunk guard).
-    const assets = [...html.matchAll(/(?:src|href)="(\/assets\/[^"]+)"/g)].map(match => match[1]);
+    // Every asset referenced by the shell must resolve (broken-chunk guard).
+    // With base './' Vite emits relative paths (./assets/...), so resolve them.
+    const assets = [...html.matchAll(/(?:src|href)="([^"]+)"/g)]
+      .map(match => match[1])
+      .filter(value => value.endsWith('.js') || value.endsWith('.css') || value.includes('/assets/'));
     for (const asset of assets) {
-      const response = await fetch(`${base}${asset}`);
+      const resolved = new URL(asset, `${base}/`).href;
+      const response = await fetch(resolved);
       if (!response.ok) {
         console.error(`✗ Referenced asset failed: ${asset} → ${response.status}`);
         failed = true;

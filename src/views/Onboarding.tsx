@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { useMemo, useRef, useState } from 'react';
 import { useApp } from '../context';
+import { track } from '../lib/analytics';
 import { createLocalQuestions, extractMaterial } from '../lib/materials';
 import { sampleToMaterials, testSamples, type TestSample } from '../samples';
 import type { Material } from '../types';
@@ -99,6 +100,7 @@ export default function Onboarding() {
       materials: allMaterials,
       customQuestions: generated,
     }));
+    track('onboarding_completed', { usedSample: Boolean(form.sampleId) });
     notify('Private practice workspace created on this device.');
   };
 
@@ -125,7 +127,7 @@ export default function Onboarding() {
 
       <section className="privacy-hero" aria-label="Local privacy notice">
         <span><LockKeyhole size={26} /></span>
-        <div><strong>YOUR DETAILS STAY ON THIS DEVICE</strong><h1>We are not collecting or uploading the information you enter here.</h1><p>Your name, CV, application letter, job description and notes are used inside this browser only to customize your practice. There is no account, analytics database or hidden upload in private mode. If you later choose the optional cloud AI feature, KaziCoach asks for separate confirmation before sending selected text.</p></div>
+        <div><strong>YOUR DETAILS STAY ON THIS DEVICE</strong><h1>We are not collecting or uploading the information you enter here.</h1><p>Your name, CV, application letter, job description and notes are used inside this browser only to customize your practice. There is no account or hidden upload in private mode, and no personal content is ever sent to analytics. The operator may enable optional anonymous usage statistics — page views and feature counts only, never your content. If you later choose the optional cloud AI feature, KaziCoach asks for separate confirmation before sending selected text.</p></div>
       </section>
 
       <div className="onboarding-layout">
