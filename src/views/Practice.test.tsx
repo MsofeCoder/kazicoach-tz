@@ -4,18 +4,31 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { AppProvider } from '../context';
 import { defaultState } from '../lib/storage';
 import Practice from './Practice';
-import type { AppState } from '../types';
+import type { AppState, Workspace } from '../types';
 
 const STORAGE_KEY = 'kazicoach-tz:v1';
 
-function seedState(overrides: Partial<AppState> = {}) {
-  const state: AppState = {
-    ...defaultState,
+function makeWorkspace(): Workspace {
+  return {
+    id: 'ws-test-1',
     profile: {
       id: 'profile-1', name: 'Asha Mwakalinga', jobPosition: 'Radiation Safety Inspector II',
       organization: 'Tanzania Atomic Energy Commission', interviewDate: '2026-09-10',
       createdAt: '2026-08-01T08:00:00.000Z',
     },
+    materials: [],
+    customQuestions: [],
+    attempts: [],
+    createdAt: '2026-08-01T08:00:00.000Z',
+  };
+}
+
+function seedState(overrides: Partial<AppState> = {}) {
+  const ws = makeWorkspace();
+  const state: AppState = {
+    ...defaultState,
+    workspaces: [ws],
+    activeWorkspaceId: ws.id,
     ...overrides,
   };
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));

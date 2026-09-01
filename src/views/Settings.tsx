@@ -1,7 +1,7 @@
 import {
   Bell, Check, CloudCog, Download, ExternalLink, FileJson, Gauge, Globe2,
-  HardDrive, Info, LockKeyhole, ShieldCheck, SlidersHorizontal, Trash2, Users,
-  Volume2,
+  HardDrive, Info, LockKeyhole, Plus, ShieldCheck, SlidersHorizontal, Trash2,
+  Users, Volume2,
 } from 'lucide-react';
 import { useApp } from '../context';
 import { clearState, defaultState } from '../lib/storage';
@@ -10,8 +10,7 @@ import { speechSupported, speakText } from '../lib/speech';
 import { selectPanelVoice, voiceDelivery, voiceStyleOptions } from '../lib/voices';
 
 export default function SettingsView() {
-  const { state, setState, notify, setView } = useApp();
-  const profile = state.profile!;
+  const { state, setState, workspace, profile, materials, customQuestions, attempts, switchWorkspace, deleteWorkspace, notify, setView } = useApp();
 
   const updatePreference = <K extends keyof typeof state.preferences>(key: K, value: (typeof state.preferences)[K]) => {
     setState(current => ({ ...current, preferences: { ...current.preferences, [key]: value } }));
@@ -21,7 +20,7 @@ export default function SettingsView() {
     if (!speechSupported()) { notify('Read-aloud is not available in this browser.'); return; }
     const voice = selectPanelVoice(state.preferences.voiceStyle, 0);
     const delivery = voiceDelivery(state.preferences.voiceStyle, state.preferences.speechRate);
-    speakText(`Good morning, ${profile.name.split(/\s+/)[0]}. Please give us five clear points, then connect your answer to the ${profile.jobPosition} role.`, {
+    speakText(`Good morning, ${profile!.name.split(/\s+/)[0]}. Please give us five clear points, then connect your answer to the ${profile!.jobPosition} role.`, {
       voice, lang: 'en-GB', rate: delivery.rate, pitch: delivery.pitch, volume: delivery.volume,
     });
   };
@@ -32,9 +31,16 @@ export default function SettingsView() {
     notify(`Progress export downloaded (${filename}).`);
   };
 
-  const reset = () => {
-    if (!window.confirm('Delete this entire private workspace—including profile, attempts, materials and custom questions—from this browser? This cannot be undone.')) return;
-    clearState(); setState(defaultState); setView('dashboard'); notify('Private workspace deleted. You can create a new one now.');
+  const resetWorkspace = () => {
+    if (!workspace) return;
+    if (!window.confirm('Delete this workspace—including profile, attempts, materials and custom questions—from this browser? This cannot be undone.')) return;
+    deleteWorkspace(workspace.id);
+    notify('Workspace deleted. You can create a new one now.');
+  };
+
+  const resetAll = () => {
+    if (!window.confirm('Delete ALL workspaces and data from this browser? This cannot be undone.')) return;
+    clearState(); setState(defaultState); setView('dashboard'); notify('All data deleted. You can create a new workspace now.');
   };
 
   return (
@@ -43,6 +49,26 @@ export default function SettingsView() {
 
       <section className="settings-grid">
         <div className="settings-main">
+          <article className="panel settings-section">
+            <div className="settings-heading"><span><Users size={19} /></span><div><h2>Workspaces</h2><p>Manage multiple interview preparations. Switch between them or add a new one.</p></div></div>
+            <div className="workspace-list">
+              {state.workspaces.map(ws => (
+                <div key={ws.id} className={`workspace-row ${ws.id === workspace?.id ? 'active' : ''}`}>
+                  <div className="workspace-info">
+                    <strong>{ws.profile.jobPosition}</strong>
+                    <span>{ws.profile.name} · {ws.attempts.length} attempts · {ws.materials.length} materials</span>
+                  </div>
+                  <div className="workspace-actions">
+                    {ws.id !== workspace?.id && <button className="button ghost small" onClick={() => switchWorkspace(ws.id)}>Switch</button>}
+                    {ws.id === workspace?.id && <span className="workspace-active-badge"><Check size={14} /> Active</span>}
+                    {state.workspaces.length > 1 && <button className="icon-button subtle" onClick={() => { if (window.confirm(`Delete workspace "${ws.profile.jobPosition}"? This cannot be undone.`)) deleteWorkspace(ws.id); }} aria-label="Delete workspace"><Trash2 size={15} /></button>}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <button className="button secondary" onClick={() => setView('dashboard')} style={{ marginTop: '0.75rem' }}><Plus size={16} /> Create new workspace</button>
+          </article>
+
           <article className="panel settings-section">
             <div className="settings-heading"><span><SlidersHorizontal size={19} /></span><div><h2>Coaching preferences</h2><p>Choose how the practice room supports you.</p></div></div>
             <div className="setting-row"><div><Globe2 size={18} /><span><strong>Kiswahili coach hints</strong><small>Keep panel questions in English and show short Kiswahili guidance.</small></span></div><button className={`toggle ${state.preferences.swahiliCoach ? 'on' : ''}`} onClick={() => updatePreference('swahiliCoach', !state.preferences.swahiliCoach)} aria-pressed={state.preferences.swahiliCoach}><i /></button></div>
@@ -60,14 +86,14 @@ export default function SettingsView() {
 
           <article className="panel settings-section danger-section">
             <div className="settings-heading"><span><HardDrive size={19} /></span><div><h2>Your local data</h2><p>There is no account or cloud database in this MVP.</p></div></div>
-            <div className="data-summary"><span><strong>{state.attempts.length}</strong><small>Attempts</small></span><span><strong>{state.materials.length}</strong><small>Materials</small></span><span><strong>{state.customQuestions.length}</strong><small>Custom cards</small></span><span><strong>{state.xp}</strong><small>XP</small></span></div>
+            <div className="data-summary"><span><strong>{attempts.length}</strong><small>Attempts</small></span><span><strong>{materials.length}</strong><small>Materials</small></span><span><strong>{customQuestions.length}</strong><small>Custom cards</small></span><span><strong>{state.xp}</strong><small>XP</small></span></div>
             <div className="settings-note"><Info size={17} /><p>{state.lastExportAt ? `Last JSON export: ${new Intl.DateTimeFormat('en-TZ', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Africa/Dar_es_Salaam' }).format(new Date(state.lastExportAt))}. An automatic IndexedDB mirror also updates after every answer.` : 'No JSON export yet. An automatic IndexedDB mirror updates after every answer, but a downloaded copy is the strongest backup.'}</p></div>
-            <div className="data-actions"><button className="button secondary" onClick={exportData}><FileJson size={16} /> Export JSON</button><button className="button danger" onClick={reset}><Trash2 size={16} /> Delete workspace & start new</button></div>
+            <div className="data-actions"><button className="button secondary" onClick={exportData}><FileJson size={16} /> Export JSON</button><button className="button danger" onClick={resetWorkspace}><Trash2 size={16} /> Delete this workspace</button><button className="button danger" onClick={resetAll}><Trash2 size={16} /> Delete all data</button></div>
           </article>
         </div>
 
         <aside className="settings-side">
-          <article className="panel target-settings-card"><span className="eyebrow">Private active plan</span><h2>{profile.jobPosition}</h2><p>{profile.organization || 'Organization not specified'}</p><div><span>Candidate</span><strong>{profile.name}</strong></div><div><span>Interview date</span><strong>{profile.interviewDate || 'Not added'}</strong></div><div><span>Private sources</span><strong>{state.materials.length} stored on this device</strong></div><em><Check size={14} /> Local customization active</em></article>
+          <article className="panel target-settings-card"><span className="eyebrow">Private active plan</span><h2>{profile!.jobPosition}</h2><p>{profile!.organization || 'Organization not specified'}</p><div><span>Candidate</span><strong>{profile!.name}</strong></div><div><span>Interview date</span><strong>{profile!.interviewDate || 'Not added'}</strong></div><div><span>Private sources</span><strong>{materials.length} stored on this device</strong></div><em><Check size={14} /> Local customization active</em></article>
 
           <article className="panel trust-card"><span className="trust-icon"><LockKeyhole size={22} /></span><h2>Privacy in plain language</h2><ul><li>Files are read locally by default.</li><li>No raw audio is stored.</li><li>Progress stays in this browser.</li><li>AI sends text only after confirmation.</li></ul><button className="text-button" onClick={exportData}><Download size={15} /> Back up my progress</button></article>
 

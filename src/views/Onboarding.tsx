@@ -23,7 +23,7 @@ const emptyForm: LocalForm = { name: '', jobPosition: '', organization: '', inte
 const accepted = '.txt,.md,.pdf,.docx,image/jpeg,image/png,image/webp';
 
 export default function Onboarding() {
-  const { setState, notify } = useApp();
+  const { createWorkspace, notify } = useApp();
   const [form, setForm] = useState<LocalForm>(emptyForm);
   const [materials, setMaterials] = useState<Material[]>([]);
   const [processing, setProcessing] = useState<string | null>(null);
@@ -88,18 +88,18 @@ export default function Onboarding() {
     const sourceText = allMaterials.filter(item => item.extractedText).map(item => `${item.name}. ${item.extractedText}`).join(' ');
     const generated = createLocalQuestions(sourceText, 'private onboarding materials').slice(0, 6);
 
-    setState(current => ({
-      ...current,
-      version: 2,
+    createWorkspace({
+      id: crypto.randomUUID(),
       profile: {
         id: crypto.randomUUID(), name: form.name.trim(), jobPosition: form.jobPosition.trim(),
         organization: form.organization.trim(), interviewDate: form.interviewDate,
         createdAt: now, sampleId: form.sampleId,
       },
-      attempts: [], xp: 0, streak: 0, lastActiveDate: null,
       materials: allMaterials,
       customQuestions: generated,
-    }));
+      attempts: [],
+      createdAt: now,
+    });
     track('onboarding_completed', { usedSample: Boolean(form.sampleId) });
     notify('Private practice workspace created on this device.');
   };

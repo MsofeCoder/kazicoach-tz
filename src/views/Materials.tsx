@@ -37,23 +37,22 @@ function validateAIQuestion(value: unknown, index: number): OralQuestion | null 
 }
 
 export default function Materials() {
-  const { state, setState, notify, startPractice } = useApp();
-  const profile = state.profile!;
-  const questionBank = useMemo(() => oralBankFor(profile, state.materials, state.customQuestions), [profile, state.materials, state.customQuestions]);
+  const { setState, profile, materials, customQuestions, notify, startPractice } = useApp();
+  const questionBank = useMemo(() => oralBankFor(profile!, materials, customQuestions), [profile, materials, customQuestions]);
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [pasteOpen, setPasteOpen] = useState(false);
   const [pastedName, setPastedName] = useState('My preparation notes');
   const [pastedText, setPastedText] = useState('');
-  const [selectedId, setSelectedId] = useState<string | null>(state.materials.find(item => item.status === 'ready')?.id || null);
+  const [selectedId, setSelectedId] = useState<string | null>(materials.find(item => item.status === 'ready')?.id || null);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiStatus, setAiStatus] = useState<'unknown' | 'ready' | 'offline'>('unknown');
   const [aiConfig, setAiConfig] = useState<AiConfig | null>(null);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const turnstileBoxRef = useRef<HTMLDivElement | null>(null);
 
-  const selected = state.materials.find(item => item.id === selectedId);
+  const selected = materials.find(item => item.id === selectedId);
 
   // The AI route decides whether a human check is required; load its config once.
   useEffect(() => {
@@ -91,7 +90,15 @@ export default function Materials() {
       }
     }
     if (additions.length) {
-      setState(current => ({ ...current, materials: [...additions, ...current.materials].slice(0, 20) }));
+      setState(current => {
+        const activeId = current.activeWorkspaceId ?? current.workspaces[0]?.id;
+        return {
+          ...current,
+          workspaces: current.workspaces.map(ws =>
+            ws.id === activeId ? { ...ws, materials: [...additions, ...ws.materials].slice(0, 20) } : ws
+          ),
+        };
+      });
       const ready = additions.find(item => item.status === 'ready');
       if (ready) setSelectedId(ready.id);
       notify(`${additions.length} private material${additions.length === 1 ? '' : 's'} added locally.`);
@@ -105,7 +112,15 @@ export default function Materials() {
       id: crypto.randomUUID(), name: pastedName.trim() || 'Pasted notes', kind: 'notes', mime: 'text/plain',
       size: new Blob([pastedText]).size, extractedText: pastedText.trim().slice(0, 100_000), status: 'ready', addedAt: new Date().toISOString(),
     };
-    setState(current => ({ ...current, materials: [material, ...current.materials].slice(0, 20) }));
+    setState(current => {
+      const activeId = current.activeWorkspaceId ?? current.workspaces[0]?.id;
+      return {
+        ...current,
+        workspaces: current.workspaces.map(ws =>
+          ws.id === activeId ? { ...ws, materials: [material, ...ws.materials].slice(0, 20) } : ws
+        ),
+      };
+    });
     setSelectedId(material.id); setPastedText(''); setPasteOpen(false); notify('Notes saved privately in this browser.');
   };
 
@@ -113,7 +128,15 @@ export default function Materials() {
     if (!selected?.extractedText) { notify('Select a text-based material first. Images need OCR or the optional cloud coach.'); return; }
     const cards = createLocalQuestions(selected.extractedText, selected.name);
     if (!cards.length) { notify('I need longer complete sentences in this material to create local cards.'); return; }
-    setState(current => ({ ...current, customQuestions: [...cards, ...current.customQuestions].slice(0, 60) }));
+      setState(current => {
+        const activeId = current.activeWorkspaceId ?? current.workspaces[0]?.id;
+        return {
+          ...current,
+          workspaces: current.workspaces.map(ws =>
+            ws.id === activeId ? { ...ws, customQuestions: [...cards, ...ws.customQuestions].slice(0, 60) } : ws
+          ),
+        };
+      });
     track('materials_generated', { source: 'local' });
     notify(`${cards.length} local practice cards created — no data left your device.`);
   };
@@ -128,8 +151,8 @@ export default function Materials() {
         body: JSON.stringify({
           materialName: selected.name,
           material: selected.extractedText.slice(0, 30_000),
-          role: profile.jobPosition,
-          organization: profile.organization || 'Target organization not specified',
+          role: profile!.jobPosition,
+          organization: profile!.organization || 'Target organization not specified',
           turnstileToken: turnstileToken || undefined,
         }),
       });
@@ -137,7 +160,15 @@ export default function Materials() {
       const payload = await response.json();
       const cards = (Array.isArray(payload.questions) ? payload.questions : []).map(validateAIQuestion).filter(Boolean) as OralQuestion[];
       if (!cards.length) throw new Error('The cloud response did not contain valid practice cards.');
-      setState(current => ({ ...current, customQuestions: [...cards, ...current.customQuestions].slice(0, 60) }));
+    setState(current => {
+      const activeId = current.activeWorkspaceId ?? current.workspaces[0]?.id;
+      return {
+        ...current,
+        workspaces: current.workspaces.map(ws =>
+          ws.id === activeId ? { ...ws, customQuestions: [...cards, ...ws.customQuestions].slice(0, 60) } : ws
+        ),
+      };
+    });
       setAiStatus('ready');
       track('materials_generated', { source: 'ai' });
       notify(`${cards.length} AI-assisted cards added. Please verify their facts.`);
@@ -148,7 +179,15 @@ export default function Materials() {
   };
 
   const removeMaterial = (id: string) => {
-    setState(current => ({ ...current, materials: current.materials.filter(item => item.id !== id) }));
+    setState(current => {
+      const activeId = current.activeWorkspaceId ?? current.workspaces[0]?.id;
+      return {
+        ...current,
+        workspaces: current.workspaces.map(ws =>
+          ws.id === activeId ? { ...ws, materials: ws.materials.filter(item => item.id !== id) } : ws
+        ),
+      };
+    });
     if (selectedId === id) setSelectedId(null);
     notify('Material removed from this browser.');
   };
@@ -161,9 +200,9 @@ export default function Materials() {
       </section>
 
       <section className="material-summary-grid">
-        <article><span className="summary-icon"><FileText /></span><div><small>Candidate profile</small><strong>{profile.name}</strong><span>Stored only in this browser</span></div><CheckCircle2 size={18} className="ok" /></article>
-        <article><span className="summary-icon blue"><ShieldCheck /></span><div><small>Active job brief</small><strong>{profile.jobPosition}</strong><span>{profile.organization || 'Organization not specified'}</span></div><CheckCircle2 size={18} className="ok" /></article>
-        <article><span className="summary-icon gold"><Sparkles /></span><div><small>Practice bank</small><strong>{questionBank.length} oral questions</strong><span>{state.customQuestions.length} created from your materials</span></div><button className="text-button" onClick={() => startPractice('oral')}>Practise</button></article>
+        <article><span className="summary-icon"><FileText /></span><div><small>Candidate profile</small><strong>{profile!.name}</strong><span>Stored only in this browser</span></div><CheckCircle2 size={18} className="ok" /></article>
+        <article><span className="summary-icon blue"><ShieldCheck /></span><div><small>Active job brief</small><strong>{profile!.jobPosition}</strong><span>{profile!.organization || 'Organization not specified'}</span></div><CheckCircle2 size={18} className="ok" /></article>
+        <article><span className="summary-icon gold"><Sparkles /></span><div><small>Practice bank</small><strong>{questionBank.length} oral questions</strong><span>{customQuestions.length} created from your materials</span></div><button className="text-button" onClick={() => startPractice('oral')}>Practise</button></article>
       </section>
 
       <section className="materials-grid">
@@ -182,9 +221,9 @@ export default function Materials() {
           </article>
 
           <article className="panel sources-panel">
-            <div className="panel-heading"><div><span className="eyebrow">Your local library</span><h2>Preparation sources</h2></div><span className="count-chip">{state.materials.length} sources</span></div>
+            <div className="panel-heading"><div><span className="eyebrow">Your local library</span><h2>Preparation sources</h2></div><span className="count-chip">{materials.length} sources</span></div>
             <div className="source-list">
-              {state.materials.map(material => (
+              {materials.map(material => (
                 <button key={material.id} className={`material-row selectable ${selectedId === material.id ? 'selected' : ''}`} onClick={() => setSelectedId(material.id)}>
                   <span className={`file-type ${material.kind === 'image' ? 'gold' : ''}`}><FileIcon material={material} /></span>
                   <div><strong>{material.name}</strong><span>{formatBytes(material.size)} · {material.status === 'ready' ? `${material.extractedText.length.toLocaleString()} text characters` : 'Image reference · OCR not active'}</span></div>
@@ -192,7 +231,7 @@ export default function Materials() {
                   <span className="delete-material" role="button" tabIndex={0} aria-label={`Remove ${material.name}`} onClick={event => { event.stopPropagation(); removeMaterial(material.id); }} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); event.stopPropagation(); removeMaterial(material.id); } }}><Trash2 size={16} /></span>
                 </button>
               ))}
-              {!state.materials.length && <div className="empty-library"><ScanText size={24} /><p>Your private files will appear here.</p></div>}
+              {!materials.length && <div className="empty-library"><ScanText size={24} /><p>Your private files will appear here.</p></div>}
             </div>
           </article>
         </div>
@@ -224,10 +263,10 @@ export default function Materials() {
 
           <article className="panel profile-review">
             <div className="panel-heading"><div><span className="eyebrow">Private customization</span><h2>Your current context</h2></div><Info size={18} /></div>
-            <div className="fact-row"><span><strong>Candidate</strong><small>{profile.name}</small></span><em>Local</em></div>
-            <div className="fact-row"><span><strong>Position</strong><small>{profile.jobPosition}</small></span><em>Local</em></div>
-            <div className="fact-row"><span><strong>Organization</strong><small>{profile.organization || 'Not specified'}</small></span><em>Local</em></div>
-            <div className="fact-row"><span><strong>Source documents</strong><small>{state.materials.length} file{state.materials.length === 1 ? '' : 's'} in this browser</small></span><em>Private</em></div>
+            <div className="fact-row"><span><strong>Candidate</strong><small>{profile!.name}</small></span><em>Local</em></div>
+            <div className="fact-row"><span><strong>Position</strong><small>{profile!.jobPosition}</small></span><em>Local</em></div>
+            <div className="fact-row"><span><strong>Organization</strong><small>{profile!.organization || 'Not specified'}</small></span><em>Local</em></div>
+            <div className="fact-row"><span><strong>Source documents</strong><small>{materials.length} file{materials.length === 1 ? '' : 's'} in this browser</small></span><em>Private</em></div>
             <p>KaziCoach uses this context only on your device. It does not create candidate achievements that are missing from your own files.</p>
           </article>
         </aside>

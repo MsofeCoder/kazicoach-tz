@@ -16,6 +16,7 @@ import type { PostHog } from 'posthog-js';
 
 let posthog: PostHog | null = null;
 let initStarted = false;
+let sessionStart = 0;
 
 export const analyticsConfig = {
   get key(): string | undefined {
@@ -24,6 +25,9 @@ export const analyticsConfig = {
   get host(): string {
     return (import.meta.env.VITE_PUBLIC_POSTHOG_HOST as string | undefined) || 'https://us.i.posthog.com';
   },
+  get configured(): boolean {
+    return Boolean(analyticsConfig.key);
+  },
 };
 
 export async function initAnalytics(): Promise<void> {
@@ -31,6 +35,7 @@ export async function initAnalytics(): Promise<void> {
   initStarted = true;
   const key = analyticsConfig.key;
   if (!key) return;
+  sessionStart = Date.now();
   try {
     const module = await import('posthog-js');
     posthog = module.default;
@@ -44,6 +49,7 @@ export async function initAnalytics(): Promise<void> {
       advanced_disable_decide: true,
       persistence: 'memory',
     });
+    track('app_loaded', { timestamp: new Date().toISOString() });
   } catch {
     posthog = null;
   }
@@ -62,4 +68,25 @@ export function track(event: string, properties: Record<string, string | number 
 /** Anonymous page-view event (view id only, never a route with user input). */
 export function trackPageView(view: string): void {
   track('$pageview', { page: view });
+}
+
+/** Track a feature interaction. Never include user content. */
+export function trackFeature(feature: string, action: string, extra?: Record<string, string | number | boolean>): void {
+  track('feature_used', { feature, action, ...extra });
+}
+
+/** Track session duration on page unload. */
+export function trackSessionEnd(): void {
+  if (!sessionStart || !posthog) return;
+  const durationSec = Math.round((Date.now() - sessionStart) / 1000);
+  track('session_ended', { duration_seconds: durationSec });
+}
+
+/** Check if PostHog is connected and return status. */
+export function getAnalyticsStatus(): { configured: boolean; connected: boolean; host: string } {
+  return {
+    configured: analyticsConfig.configured,
+    connected: Boolean(posthog),
+    host: analyticsConfig.host,
+  };
 }

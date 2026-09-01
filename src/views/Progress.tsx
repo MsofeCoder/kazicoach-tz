@@ -10,10 +10,9 @@ import { calculateReadiness } from '../lib/scoring';
 import type { QuestionCategory } from '../types';
 
 export default function Progress() {
-  const { state, startPractice } = useApp();
-  const attempts = state.attempts;
-  const oralQuestions = useMemo(() => oralBankFor(state.profile!, state.materials, state.customQuestions), [state.profile, state.materials, state.customQuestions]);
-  const writtenQuestions = useMemo(() => writtenBankFor(state.profile!), [state.profile]);
+  const { state, profile, materials, customQuestions, attempts, startPractice } = useApp();
+  const oralQuestions = useMemo(() => oralBankFor(profile!, materials, customQuestions), [profile, materials, customQuestions]);
+  const writtenQuestions = useMemo(() => writtenBankFor(profile!), [profile]);
   const readiness = calculateReadiness(attempts.map(item => item.score));
   const level = Math.floor(state.xp / 180) + 1;
   const average = attempts.length ? Math.round(attempts.reduce((sum, item) => sum + item.score, 0) / attempts.length) : 0;

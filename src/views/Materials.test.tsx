@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import App from '../App';
 import { AppProvider } from '../context';
 import { defaultState } from '../lib/storage';
-import type { AppState } from '../types';
+import type { AppState, Workspace } from '../types';
 
 const STORAGE_KEY = 'kazicoach-tz:v1';
 
@@ -14,14 +14,27 @@ const longNotes = [
   'Every inspection report must separate facts from opinions so that the regulated facility can act on each finding without guessing what was actually observed on site.',
 ].join(' ');
 
-function seedState(overrides: Partial<AppState> = {}) {
-  const state: AppState = {
-    ...defaultState,
+function makeWorkspace(): Workspace {
+  return {
+    id: 'ws-test-1',
     profile: {
       id: 'profile-1', name: 'Asha Mwakalinga', jobPosition: 'Radiation Safety Inspector II',
       organization: 'Tanzania Atomic Energy Commission', interviewDate: '2026-09-10',
       createdAt: '2026-08-01T08:00:00.000Z',
     },
+    materials: [],
+    customQuestions: [],
+    attempts: [],
+    createdAt: '2026-08-01T08:00:00.000Z',
+  };
+}
+
+function seedState(overrides: Partial<AppState> = {}, wsOverrides: Partial<Workspace> = {}) {
+  const ws = { ...makeWorkspace(), ...wsOverrides };
+  const state: AppState = {
+    ...defaultState,
+    workspaces: [ws],
+    activeWorkspaceId: ws.id,
     ...overrides,
   };
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -30,7 +43,6 @@ function seedState(overrides: Partial<AppState> = {}) {
 beforeEach(() => {
   localStorage.clear();
   vi.restoreAllMocks();
-  // The AI route config probe must never hit a network in tests.
   vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ configured: false, turnstile: false, siteKey: null }), { status: 200 })));
 });
 
@@ -38,7 +50,7 @@ afterEach(cleanup);
 
 describe('Materials workspace', () => {
   it('creates local practice cards from the selected source without leaving the device', async () => {
-    seedState({
+    seedState({}, {
       materials: [{
         id: 'mat-1', name: 'Study notes.txt', kind: 'notes', mime: 'text/plain', size: 500,
         extractedText: longNotes, status: 'ready', addedAt: '2026-08-02T08:00:00.000Z',
@@ -46,7 +58,6 @@ describe('Materials workspace', () => {
     });
     render(<AppProvider><App /></AppProvider>);
     await userEvent.click(screen.getByRole('button', { name: /^Materials/ }));
-    // The name appears in the library row and in the generator summary.
     expect(screen.getAllByText('Study notes.txt').length).toBeGreaterThan(0);
     expect(screen.getByText(/Selected:/)).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: /Create locally/i }));

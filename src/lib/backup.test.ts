@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import { mergeBackup, shouldSuggestBackup, workspaceItemCount } from './backup';
 import { defaultState } from './storage';
-import type { AppState, Attempt } from '../types';
+import type { AppState, Attempt, Workspace } from '../types';
 
 function attempt(index: number): Attempt {
   return {
@@ -12,13 +12,25 @@ function attempt(index: number): Attempt {
   };
 }
 
-const withProfile: AppState = {
+function makeWorkspace(overrides: Partial<Workspace> = {}): Workspace {
+  return {
+    id: `ws-${Math.random().toString(36).slice(2, 8)}`,
+    profile: {
+      id: 'p1', name: 'Asha Mwakalinga', jobPosition: 'Radiation Safety Inspector II',
+      organization: 'TAEC', interviewDate: '2026-09-10', createdAt: '2026-08-01T08:00:00.000Z',
+    },
+    materials: [],
+    customQuestions: [],
+    attempts: [],
+    createdAt: '2026-08-01T08:00:00.000Z',
+    ...overrides,
+  };
+}
+
+const withWorkspace: AppState = {
   ...defaultState,
-  version: 3,
-  profile: {
-    id: 'p1', name: 'Asha Mwakalinga', jobPosition: 'Radiation Safety Inspector II',
-    organization: 'TAEC', interviewDate: '2026-09-10', createdAt: '2026-08-01T08:00:00.000Z',
-  },
+  workspaces: [makeWorkspace()],
+  activeWorkspaceId: 'ws-1',
 };
 
 const sampleMaterial = {
@@ -28,26 +40,42 @@ const sampleMaterial = {
 
 describe('mergeBackup', () => {
   it('restores the profile, preferences and capped collections over a fresh state', () => {
+    const ws = makeWorkspace({ attempts: Array.from({ length: 340 }, (_, index) => attempt(index)) });
     const snapshot: Partial<AppState> = {
-      profile: withProfile.profile,
-      attempts: Array.from({ length: 340 }, (_, index) => attempt(index)),
-      materials: withProfile.materials,
-      customQuestions: withProfile.customQuestions,
+      workspaces: [ws],
+      activeWorkspaceId: ws.id,
       preferences: { ...defaultState.preferences, voiceStyle: 'deep' },
     };
     const merged = mergeBackup(snapshot, defaultState);
-    expect(merged.profile?.name).toBe('Asha Mwakalinga');
+    expect(merged.workspaces[0]?.profile.name).toBe('Asha Mwakalinga');
     expect(merged.preferences.voiceStyle).toBe('deep');
     expect(merged.preferences.swahiliCoach).toBe(true);
-    expect(merged.attempts).toHaveLength(300);
-    expect(merged.materials).toHaveLength(0);
+    expect(merged.workspaces[0]?.attempts).toHaveLength(300);
+    expect(merged.workspaces[0]?.materials).toHaveLength(0);
+  });
+
+  it('converts old v3 format with top-level profile into a workspace', () => {
+    const snapshot = {
+      version: 3,
+      profile: {
+        id: 'p1', name: 'Test User', jobPosition: 'ICT Officer',
+        organization: 'Ministry', interviewDate: '2026-10-01', createdAt: '2026-08-01T08:00:00.000Z',
+      },
+      attempts: [attempt(1)],
+      materials: [sampleMaterial],
+      customQuestions: [],
+    } as unknown as Partial<AppState>;
+    const merged = mergeBackup(snapshot, defaultState);
+    expect(merged.workspaces).toHaveLength(1);
+    expect(merged.workspaces[0]?.profile.name).toBe('Test User');
+    expect(merged.workspaces[0]?.attempts).toHaveLength(1);
+    expect(merged.workspaces[0]?.materials).toHaveLength(1);
   });
 
   it('keeps the fallback arrays when the snapshot is malformed', () => {
-    const fallback: AppState = { ...withProfile, attempts: [attempt(1)] };
-    const merged = mergeBackup({ attempts: 'bad' as unknown as AppState['attempts'] }, fallback);
-    expect(merged.attempts).toHaveLength(1);
-    expect(merged.profile).toEqual(fallback.profile);
+    const fallback: AppState = { ...withWorkspace };
+    const merged = mergeBackup({ workspaces: 'bad' as unknown as Workspace[] }, fallback);
+    expect(merged.workspaces).toHaveLength(1);
   });
 });
 
@@ -57,26 +85,32 @@ describe('shouldSuggestBackup', () => {
   });
 
   it('nudges once there is content and no export has happened', () => {
-    expect(shouldSuggestBackup({ ...withProfile, attempts: [attempt(1)] })).toBe(true);
+    const ws = makeWorkspace({ attempts: [attempt(1)] });
+    expect(shouldSuggestBackup({ ...withWorkspace, workspaces: [ws] })).toBe(true);
   });
 
   it('stays quiet within a week of the last export', () => {
     const now = new Date('2026-08-14T08:00:00.000Z');
-    expect(shouldSuggestBackup({ ...withProfile, attempts: [attempt(1)], lastExportAt: '2026-08-10T08:00:00.000Z' }, now)).toBe(false);
+    const ws = makeWorkspace({ attempts: [attempt(1)] });
+    expect(shouldSuggestBackup({ ...withWorkspace, workspaces: [ws], lastExportAt: '2026-08-10T08:00:00.000Z' }, now)).toBe(false);
   });
 
   it('nudges again after a week', () => {
     const now = new Date('2026-08-18T08:00:00.000Z');
-    expect(shouldSuggestBackup({ ...withProfile, attempts: [attempt(1)], lastExportAt: '2026-08-10T08:00:00.000Z' }, now)).toBe(true);
+    const ws = makeWorkspace({ attempts: [attempt(1)] });
+    expect(shouldSuggestBackup({ ...withWorkspace, workspaces: [ws], lastExportAt: '2026-08-10T08:00:00.000Z' }, now)).toBe(true);
   });
 
   it('treats a corrupted export stamp as due', () => {
-    expect(shouldSuggestBackup({ ...withProfile, materials: [sampleMaterial], lastExportAt: 'not-a-date' })).toBe(true);
+    const ws = makeWorkspace({ materials: [sampleMaterial] });
+    expect(shouldSuggestBackup({ ...withWorkspace, workspaces: [ws], lastExportAt: 'not-a-date' })).toBe(true);
   });
 });
 
 describe('workspaceItemCount', () => {
-  it('adds attempts, materials and custom questions', () => {
-    expect(workspaceItemCount({ ...withProfile, attempts: [attempt(1)], materials: [sampleMaterial] })).toBe(2);
+  it('adds attempts, materials and custom questions across workspaces', () => {
+    const ws1 = makeWorkspace({ attempts: [attempt(1)], materials: [sampleMaterial] });
+    const ws2 = makeWorkspace({ attempts: [attempt(2), attempt(3)] });
+    expect(workspaceItemCount({ ...withWorkspace, workspaces: [ws1, ws2] })).toBe(4);
   });
 });

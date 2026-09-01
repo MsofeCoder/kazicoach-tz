@@ -41,9 +41,9 @@ function PanelIdentity({ category, questionIndex, voiceStyle, onVoiceStyle }: { 
 }
 
 function OralPractice() {
-  const { state, setState, recordAttempt, notify, practiceCategory } = useApp();
+  const { state, setState, profile, materials, customQuestions, recordAttempt, notify, practiceCategory } = useApp();
   const [category, setCategory] = useState<'all' | QuestionCategory>(practiceCategory);
-  const allQuestions = useMemo(() => oralBankFor(state.profile!, state.materials, state.customQuestions), [state.profile, state.materials, state.customQuestions]);
+  const allQuestions = useMemo(() => oralBankFor(profile!, materials, customQuestions), [profile, materials, customQuestions]);
   const questions = useMemo(() => category === 'all' ? allQuestions : allQuestions.filter(item => item.category === category), [allQuestions, category]);
   const [index, setIndex] = useState(0);
   const [answer, setAnswer] = useState('');
@@ -182,7 +182,16 @@ function OralPractice() {
 
   const clearPerformanceAndRestart = () => {
     if (!window.confirm('Clear all scores, attempts, XP and streak, then start again? Your materials and custom questions will stay.')) return;
-    setState(current => ({ ...current, attempts: [], xp: 0, streak: 0, lastActiveDate: null }));
+    setState(current => {
+      const activeId = current.activeWorkspaceId ?? current.workspaces[0]?.id;
+      return {
+        ...current,
+        xp: 0, streak: 0, lastActiveDate: null,
+        workspaces: current.workspaces.map(ws =>
+          ws.id === activeId ? { ...ws, attempts: [] } : ws
+        ),
+      };
+    });
     restartSession();
     notify('Performance progress cleared. Your preparation materials are safe.');
   };
@@ -330,8 +339,8 @@ function TrashIcon() {
 }
 
 function WrittenPractice() {
-  const { state, setState, recordAttempt, notify } = useApp();
-  const writtenQuestions = useMemo(() => writtenBankFor(state.profile!), [state.profile]);
+  const { state, setState, profile, recordAttempt, notify } = useApp();
+  const writtenQuestions = useMemo(() => writtenBankFor(profile!), [profile]);
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [checked, setChecked] = useState(false);
@@ -369,7 +378,16 @@ function WrittenPractice() {
   };
   const clearPerformance = () => {
     if (!window.confirm('Clear all scores, attempts, XP and streak, then start again? Your materials and custom questions will stay.')) return;
-    setState(current => ({ ...current, attempts: [], xp: 0, streak: 0, lastActiveDate: null }));
+    setState(current => {
+      const activeId = current.activeWorkspaceId ?? current.workspaces[0]?.id;
+      return {
+        ...current,
+        xp: 0, streak: 0, lastActiveDate: null,
+        workspaces: current.workspaces.map(ws =>
+          ws.id === activeId ? { ...ws, attempts: [] } : ws
+        ),
+      };
+    });
     restart(); notify('Performance progress cleared. Your preparation materials are safe.');
   };
 

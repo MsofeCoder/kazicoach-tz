@@ -1,8 +1,8 @@
 import {
-  BarChart3, BookOpenText, ChevronRight, Flame, FolderUp, Gauge, Home,
-  Menu, Mic2, Settings, ShieldCheck, Sparkles, Target, X,
+  BarChart3, BookOpenText, ChevronRight, ChevronDown, Flame, FolderUp, Gauge, Home,
+  HelpCircle, Menu, Mic2, Plus, Settings, ShieldCheck, Sparkles, Target, X,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { useApp } from './context';
 import { trackPageView } from './lib/analytics';
 import type { View } from './types';
@@ -12,6 +12,21 @@ import Materials from './views/Materials';
 import Progress from './views/Progress';
 import SettingsView from './views/Settings';
 import Onboarding from './views/Onboarding';
+import InteractiveGuide from './components/InteractiveGuide';
+
+const GUIDE_KEY = 'kazicoach-tz:guide-seen';
+
+interface GuideContextValue {
+  showGuide: boolean;
+  openGuide: () => void;
+  closeGuide: () => void;
+}
+
+const GuideContext = createContext<GuideContextValue | null>(null);
+
+export function useGuide() {
+  return useContext(GuideContext);
+}
 
 const navigation: Array<{ id: View; label: string; sw: string; icon: typeof Home }> = [
   { id: 'dashboard', label: 'Today', sw: 'Leo', icon: Home },
@@ -33,14 +48,43 @@ function Brand({ compact = false }: { compact?: boolean }) {
   );
 }
 
+function WorkspaceSelector() {
+  const { state, workspace, switchWorkspace, setView } = useApp();
+  const [open, setOpen] = useState(false);
+  if (state.workspaces.length <= 1) return null;
+  return (
+    <div className="workspace-selector">
+      <button className="workspace-selector-trigger" onClick={() => setOpen(!open)} aria-expanded={open}>
+        <span className="workspace-active-name">{workspace?.profile.jobPosition ?? 'Workspace'}</span>
+        {open ? <ChevronRight size={15} className="rotated" /> : <ChevronDown size={15} />}
+      </button>
+      {open && (
+        <div className="workspace-dropdown">
+          {state.workspaces.map(ws => (
+            <button key={ws.id} className={`workspace-option ${ws.id === workspace?.id ? 'active' : ''}`} onClick={() => { switchWorkspace(ws.id); setOpen(false); }}>
+              <span className="workspace-option-name">{ws.profile.jobPosition}</span>
+              <span className="workspace-option-meta">{ws.profile.name} · {ws.attempts.length} attempts</span>
+            </button>
+          ))}
+          <button className="workspace-option add-workspace" onClick={() => { setOpen(false); setView('settings'); }}>
+            <Plus size={15} /><span>Add workspace</span>
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Sidebar() {
-  const { view, setView, state, startPractice } = useApp();
+  const { view, setView, state, startPractice, profile } = useApp();
+  const guide = useGuide();
   const level = Math.floor(state.xp / 180) + 1;
   const levelProgress = state.xp % 180;
 
   return (
     <aside className="sidebar">
       <Brand />
+      <WorkspaceSelector />
       <nav className="side-nav" aria-label="Main navigation">
         <p className="nav-eyebrow">Workspace</p>
         {navigation.map(item => {
@@ -67,7 +111,10 @@ function Sidebar() {
       <button className="sidebar-cta" onClick={() => startPractice('oral')}>
         <Mic2 size={18} /> Start mock panel
       </button>
-      <p className="independent-note">Independent preparation tool<br />Not affiliated with PSRS or TAEC</p>
+      <button className="sidebar-help" onClick={guide?.openGuide}>
+        <HelpCircle size={16} /> How to use this app
+      </button>
+      {profile && <p className="independent-note">{profile.name} · {profile.jobPosition}<br />Independent preparation tool</p>}
     </aside>
   );
 }
@@ -122,17 +169,16 @@ function BottomNav() {
 }
 
 function TopContext() {
-  const { state, startPractice } = useApp();
-  const profile = state.profile!;
+  const { state, profile, attempts, startPractice } = useApp();
   return (
     <header className="context-bar">
       <div className="role-context">
         <span className="role-symbol"><Target size={17} /></span>
-        <div><small>Private interview plan</small><strong>{profile.jobPosition} {profile.organization && <span>· {profile.organization}</span>}</strong></div>
+        <div><small>Private interview plan</small><strong>{profile?.jobPosition} {profile?.organization && <span>· {profile.organization}</span>}</strong></div>
       </div>
       <div className="context-actions">
         <span className="top-stat"><Flame size={17} /> <b>{state.streak}</b> day streak</span>
-        <span className="top-stat"><Gauge size={17} /> <b>{state.attempts.length}</b> attempts</span>
+        <span className="top-stat"><Gauge size={17} /> <b>{attempts.length}</b> attempts</span>
         <button className="button small primary" onClick={() => startPractice('oral')}><Mic2 size={16} /> Quick practice</button>
       </div>
     </header>
@@ -140,34 +186,53 @@ function TopContext() {
 }
 
 export default function App() {
-  const { state, view, toast } = useApp();
+  const { profile, view, toast } = useApp();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
+
+  // Auto-show guide after onboarding completes (first visit only)
+  useEffect(() => {
+    if (!profile) return;
+    const hasSeenGuide = (() => { try { return !!localStorage.getItem(GUIDE_KEY); } catch { return false; } })();
+    if (hasSeenGuide) return;
+    const timer = setTimeout(() => setShowGuide(true), 600);
+    return () => clearTimeout(timer);
+  }, [profile]);
+
+  const openGuide = useCallback(() => setShowGuide(true), []);
+  const closeGuide = useCallback(() => {
+    setShowGuide(false);
+    try { localStorage.setItem(GUIDE_KEY, '1'); } catch { /* ok */ }
+  }, []);
 
   useEffect(() => {
     const titles: Record<View, string> = { dashboard: 'Today', practice: 'Practice', materials: 'Materials', progress: 'Progress', settings: 'Settings' };
-    document.title = state.profile ? `${titles[view]} — KaziCoach TZ` : 'Private setup — KaziCoach TZ';
-    trackPageView(state.profile ? view : 'onboarding');
-  }, [view, state.profile]);
+    document.title = profile ? `${titles[view]} — KaziCoach TZ` : 'Private setup — KaziCoach TZ';
+    trackPageView(profile ? view : 'onboarding');
+  }, [view, profile]);
 
-  if (!state.profile) return <Onboarding />;
+  if (!profile) return <Onboarding />;
 
   return (
-    <div className="app-shell">
-      <Sidebar />
-      <MobileHeader onMenu={() => setMenuOpen(true)} />
-      <MobileDrawer open={menuOpen} close={() => setMenuOpen(false)} />
-      <div className="app-main">
-        <TopContext />
-        <main className="page-stage">
-          {view === 'dashboard' && <Dashboard />}
-          {view === 'practice' && <Practice />}
-          {view === 'materials' && <Materials />}
-          {view === 'progress' && <Progress />}
-          {view === 'settings' && <SettingsView />}
-        </main>
+    <GuideContext.Provider value={{ showGuide, openGuide, closeGuide }}>
+      <div className="app-shell">
+        {showGuide && <InteractiveGuide onClose={closeGuide} />}
+        <Sidebar />
+        <MobileHeader onMenu={() => setMenuOpen(true)} />
+        <MobileDrawer open={menuOpen} close={() => setMenuOpen(false)} />
+        <div className="app-main">
+          <TopContext />
+          <main className="page-stage">
+            {view === 'dashboard' && <Dashboard />}
+            {view === 'practice' && <Practice />}
+            {view === 'materials' && <Materials />}
+            {view === 'progress' && <Progress />}
+            {view === 'settings' && <SettingsView />}
+          </main>
+        </div>
+        <BottomNav />
+        {toast && <div className="toast" role="status"><BookOpenText size={17} /> {toast}</div>}
       </div>
-      <BottomNav />
-      {toast && <div className="toast" role="status"><BookOpenText size={17} /> {toast}</div>}
-    </div>
+    </GuideContext.Provider>
   );
 }

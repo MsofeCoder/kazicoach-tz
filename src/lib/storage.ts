@@ -1,17 +1,15 @@
-import type { AppState } from '../types';
+import type { AppState, Workspace } from '../types';
 
 const STORAGE_KEY = 'kazicoach-tz:v1';
 
 export const defaultState: AppState = {
-  version: 3,
-  profile: null,
-  attempts: [],
+  version: 4,
+  workspaces: [],
+  activeWorkspaceId: null,
   xp: 0,
   streak: 0,
   lastActiveDate: null,
   lastExportAt: null,
-  customQuestions: [],
-  materials: [],
   preferences: {
     swahiliCoach: true,
     speechRate: 0.92,
@@ -19,19 +17,71 @@ export const defaultState: AppState = {
   },
 };
 
+function migrateV3(raw: Record<string, unknown>): AppState {
+  const profile = raw.profile as AppState['workspaces'][0]['profile'] | null;
+  const attempts = Array.isArray(raw.attempts) ? raw.attempts.slice(-300) : [];
+  const materials = Array.isArray(raw.materials) ? raw.materials.slice(-20) : [];
+  const customQuestions = Array.isArray(raw.customQuestions) ? raw.customQuestions.slice(-60) : [];
+
+  if (!profile) {
+    return { ...defaultState, version: 4 };
+  }
+
+  const workspace: Workspace = {
+    id: crypto.randomUUID(),
+    profile,
+    materials,
+    customQuestions,
+    attempts,
+    createdAt: profile.createdAt || new Date().toISOString(),
+  };
+
+  return {
+    version: 4,
+    workspaces: [workspace],
+    activeWorkspaceId: workspace.id,
+    xp: typeof raw.xp === 'number' ? raw.xp : 0,
+    streak: typeof raw.streak === 'number' ? raw.streak : 0,
+    lastActiveDate: typeof raw.lastActiveDate === 'string' ? raw.lastActiveDate : null,
+    lastExportAt: typeof raw.lastExportAt === 'string' ? raw.lastExportAt : null,
+    preferences: {
+      ...defaultState.preferences,
+      ...((raw.preferences as Record<string, unknown>) || {}),
+    },
+  };
+}
+
+function migrateWorkspaces(parsed: Record<string, unknown>): AppState {
+  const raw = parsed as unknown as AppState;
+  const workspaces: Workspace[] = Array.isArray(raw.workspaces)
+    ? raw.workspaces.map(ws => ({
+        ...ws,
+        attempts: Array.isArray(ws.attempts) ? ws.attempts.slice(-300) : [],
+        materials: Array.isArray(ws.materials) ? ws.materials.slice(-20) : [],
+        customQuestions: Array.isArray(ws.customQuestions) ? ws.customQuestions.slice(-60) : [],
+      }))
+    : [];
+  const activeId = typeof raw.activeWorkspaceId === 'string' && workspaces.some(w => w.id === raw.activeWorkspaceId)
+    ? raw.activeWorkspaceId
+    : workspaces[0]?.id ?? null;
+  return {
+    ...defaultState,
+    ...raw,
+    version: 4,
+    workspaces,
+    activeWorkspaceId: activeId,
+    preferences: { ...defaultState.preferences, ...(raw.preferences || {}) },
+  };
+}
+
 export function loadState(): AppState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return defaultState;
-    const parsed = JSON.parse(raw) as Partial<AppState>;
-    return {
-      ...defaultState,
-      ...parsed,
-      preferences: { ...defaultState.preferences, ...parsed.preferences },
-      attempts: Array.isArray(parsed.attempts) ? parsed.attempts.slice(-300) : [],
-      materials: Array.isArray(parsed.materials) ? parsed.materials.slice(-20) : [],
-      customQuestions: Array.isArray(parsed.customQuestions) ? parsed.customQuestions.slice(-60) : [],
-    };
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+    const version = typeof parsed.version === 'number' ? parsed.version : 3;
+    if (version <= 3) return migrateV3(parsed);
+    return migrateWorkspaces(parsed);
   } catch {
     return defaultState;
   }
@@ -39,12 +89,7 @@ export function loadState(): AppState {
 
 export function saveState(state: AppState): void {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({
-      ...state,
-      attempts: state.attempts.slice(-300),
-      materials: state.materials.slice(-20),
-      customQuestions: state.customQuestions.slice(-60),
-    }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   } catch {
     // Practice must keep working if private browsing/storage quota blocks persistence.
   }

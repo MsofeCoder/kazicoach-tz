@@ -1,10 +1,11 @@
 import {
   ArrowRight, Award, BookOpenCheck, CalendarDays, CheckCircle2, ChevronRight,
-  Clock3, Flame, LockKeyhole, Mic2, PenLine, Radio, ShieldCheck, Sparkles, Trophy,
+  Clock3, Flame, HelpCircle, LockKeyhole, Mic2, PenLine, Radio, ShieldCheck, Sparkles, Trophy,
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { categoryLabels, encouragements } from '../data';
 import { useApp } from '../context';
+import { useGuide } from '../App';
 import BackupCard from '../components/BackupCard';
 import { oralBankFor } from '../lib/personalization';
 import { calculateReadiness } from '../lib/scoring';
@@ -27,30 +28,30 @@ function useCountdown(interviewDate: string) {
 }
 
 export default function Dashboard() {
-  const { state, startPractice, setView } = useApp();
-  const profile = state.profile!;
-  const countdown = useCountdown(profile.interviewDate);
-  const readiness = calculateReadiness(state.attempts.map(item => item.score));
-  const encouragement = encouragements[state.attempts.length % encouragements.length];
+  const { state, profile, materials, customQuestions, attempts, startPractice, setView } = useApp();
+  const guide = useGuide();
+  const countdown = useCountdown(profile!.interviewDate);
+  const readiness = calculateReadiness(attempts.map(item => item.score));
+  const encouragement = encouragements[attempts.length % encouragements.length];
   const level = Math.floor(state.xp / 180) + 1;
-  const questionBank = useMemo(() => oralBankFor(profile, state.materials, state.customQuestions), [profile, state.materials, state.customQuestions]);
-  const firstName = profile.name.trim().split(/\s+/)[0];
+  const questionBank = useMemo(() => oralBankFor(profile!, materials, customQuestions), [profile, materials, customQuestions]);
+  const firstName = profile!.name.trim().split(/\s+/)[0];
   const todayLabel = new Intl.DateTimeFormat('en-TZ', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'Africa/Dar_es_Salaam' }).format(new Date());
-  const interviewLabel = profile.interviewDate ? new Intl.DateTimeFormat('en-TZ', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(`${profile.interviewDate}T12:00:00+03:00`)) : '';
+  const interviewLabel = profile!.interviewDate ? new Intl.DateTimeFormat('en-TZ', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(`${profile!.interviewDate}T12:00:00+03:00`)) : '';
 
   const categoryScores = useMemo(() => {
     const categories = Object.keys(categoryLabels) as QuestionCategory[];
     return categories.map(category => {
-      const attempts = state.attempts.filter(item => item.category === category);
-      const score = attempts.length ? Math.round(attempts.reduce((sum, item) => sum + item.score, 0) / attempts.length) : 0;
-      return { category, score, attempts: attempts.length };
+      const catAttempts = attempts.filter(item => item.category === category);
+      const score = catAttempts.length ? Math.round(catAttempts.reduce((sum, item) => sum + item.score, 0) / catAttempts.length) : 0;
+      return { category, score, attempts: catAttempts.length };
     });
-  }, [state.attempts]);
+  }, [attempts]);
 
-  const focus = state.attempts.length
+  const focus = attempts.length
     ? [...categoryScores].sort((a, b) => (a.attempts ? a.score : -1) - (b.attempts ? b.score : -1))[0]
     : categoryScores.find(item => item.category === 'role')!;
-  const completedQuestions = new Set(state.attempts.map(item => item.questionId)).size;
+  const completedQuestions = new Set(attempts.map(item => item.questionId)).size;
   const coverage = questionBank.length ? Math.min(100, Math.round((completedQuestions / questionBank.length) * 100)) : 0;
 
   return (
@@ -61,7 +62,7 @@ export default function Dashboard() {
           <h1>Habari, {firstName}.</h1>
           <p>{encouragement}</p>
         </div>
-        {profile.interviewDate
+        {profile!.interviewDate
           ? <div className="interview-chip"><CalendarDays size={17} /><span><small>Interview date</small><strong>{interviewLabel}</strong></span></div>
           : <button className="interview-chip plain" onClick={() => setView('settings')}><CalendarDays size={17} /><span><small>Study plan</small><strong>Practise at your pace</strong></span></button>}
       </section>
@@ -72,15 +73,15 @@ export default function Dashboard() {
         <div className="countdown-card">
           <div className="countdown-copy">
             <span className="card-kicker"><Radio size={15} /> Your target</span>
-            <h2>{profile.jobPosition}</h2>
-            <p>{profile.organization || 'Organization not specified'} · Personalized from your private materials</p>
+            <h2>{profile!.jobPosition}</h2>
+            <p>{profile!.organization || 'Organization not specified'} · Personalized from your private materials</p>
             <div className="venue"><LockKeyhole size={16} /> Local-only candidate workspace</div>
           </div>
           <div className="countdown-box" aria-label={countdown ? `${countdown.days} days and ${countdown.hours} hours to the interview date` : 'Practice at your own pace'}>
             {!countdown ? <><strong>Ready</strong><span>At your pace</span></> : countdown.passed ? <><strong>Today</strong><span>Stay calm</span></> : <><div><strong>{String(countdown.days).padStart(2, '0')}</strong><span>Days</span></div><i>:</i><div><strong>{String(countdown.hours).padStart(2, '0')}</strong><span>Hours</span></div></>}
           </div>
           <div className="target-footer">
-            <span><ShieldCheck size={15} /> {state.materials.length} private source{state.materials.length === 1 ? '' : 's'} · {questionBank.length} oral questions</span>
+            <span><ShieldCheck size={15} /> {materials.length} private source{materials.length === 1 ? '' : 's'} · {questionBank.length} oral questions</span>
             <span>Stored on this device <CheckCircle2 size={14} /></span>
           </div>
         </div>
@@ -92,7 +93,7 @@ export default function Dashboard() {
           <div className="readiness-copy">
             <span className="card-kicker">Interview readiness</span>
             <h3>{readiness >= 75 ? 'Nearly panel-ready' : readiness >= 50 ? 'Momentum is building' : 'Your baseline is ready'}</h3>
-            <p>{state.attempts.length ? 'Based on your recent answer coverage and practice consistency.' : 'Complete three answers to replace the starter estimate with your score.'}</p>
+            <p>{attempts.length ? 'Based on your recent answer coverage and practice consistency.' : 'Complete three answers to replace the starter estimate with your score.'}</p>
           </div>
           <button className="text-button" onClick={() => setView('progress')}>See breakdown <ArrowRight size={15} /></button>
         </div>
@@ -102,7 +103,7 @@ export default function Dashboard() {
         <article className="metric-card"><span className="metric-icon green"><BookOpenCheck size={19} /></span><div><strong>{completedQuestions}<small> / {questionBank.length}</small></strong><span>Questions covered</span></div><em>{coverage}%</em></article>
         <article className="metric-card"><span className="metric-icon gold"><Sparkles size={19} /></span><div><strong>{state.xp}</strong><span>Experience points</span></div><em>Level {level}</em></article>
         <article className="metric-card"><span className="metric-icon orange"><Flame size={19} /></span><div><strong>{state.streak}</strong><span>Day practice streak</span></div><em>{state.streak ? 'Keep it alive' : 'Start today'}</em></article>
-        <article className="metric-card"><span className="metric-icon blue"><Award size={19} /></span><div><strong>{state.attempts.filter(item => item.score >= 80).length}</strong><span>Strong answers</span></div><em>80%+</em></article>
+        <article className="metric-card"><span className="metric-icon blue"><Award size={19} /></span><div><strong>{attempts.filter(item => item.score >= 80).length}</strong><span>Strong answers</span></div><em>80%+</em></article>
       </section>
 
       <section className="content-grid">
@@ -115,7 +116,7 @@ export default function Dashboard() {
             <span className="mission-number">01</span>
             <div className="mission-copy">
               <span className={`category-badge ${focus.category}`}>{categoryLabels[focus.category]}</span>
-              <h3>{focus.attempts ? `Strengthen your ${categoryLabels[focus.category].toLowerCase()} answers` : `Master the advertised ${profile.jobPosition} duties`}</h3>
+              <h3>{focus.attempts ? `Strengthen your ${categoryLabels[focus.category].toLowerCase()} answers` : `Master the advertised ${profile!.jobPosition} duties`}</h3>
               <p>Three panel questions · answer aloud · get concept-by-concept feedback.</p>
               <div className="mission-meta"><span><Mic2 size={14} /> Oral panel</span><span><Trophy size={14} /> Up to 90 XP</span></div>
             </div>
@@ -144,6 +145,7 @@ export default function Dashboard() {
         <button className="quick-card" onClick={() => startPractice('oral')}><span className="quick-icon"><Mic2 /></span><div><small>90-second drill</small><strong>Answer one panel question</strong></div><ArrowRight size={18} /></button>
         <button className="quick-card" onClick={() => startPractice('written')}><span className="quick-icon blue"><PenLine /></span><div><small>Knowledge drill</small><strong>Take a written quick test</strong></div><ArrowRight size={18} /></button>
         <button className="quick-card" onClick={() => setView('materials')}><span className="quick-icon gold"><BookOpenCheck /></span><div><small>Private by default</small><strong>Add preparation materials</strong></div><ArrowRight size={18} /></button>
+        <button className="quick-card" onClick={guide?.openGuide}><span className="quick-icon"><HelpCircle /></span><div><small>New here?</small><strong>How to use this app</strong></div><ArrowRight size={18} /></button>
       </section>
     </div>
   );

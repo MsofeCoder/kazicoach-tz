@@ -85,15 +85,22 @@ export interface Preferences {
   voiceStyle: VoiceStyle;
 }
 
+export interface Workspace {
+  id: string;
+  profile: CandidateProfile;
+  materials: Material[];
+  customQuestions: OralQuestion[];
+  attempts: Attempt[];
+  createdAt: string;
+}
+
 export interface AppState {
   version: number;
-  profile: CandidateProfile | null;
-  attempts: Attempt[];
+  workspaces: Workspace[];
+  activeWorkspaceId: string | null;
   xp: number;
   streak: number;
   lastActiveDate: string | null;
   lastExportAt: string | null;
-  customQuestions: OralQuestion[];
-  materials: Material[];
   preferences: Preferences;
 }

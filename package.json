@@ -15,7 +15,11 @@
     "lint": "tsc -b --pretty false",
     "lint:functions": "tsc -p tsconfig.functions.json --pretty false",
     "lint:eslint": "eslint . --max-warnings 0",
-    "smoke": "node scripts/smoke.mjs"
+    "smoke": "node scripts/smoke.mjs",
+    "deploy:check": "node scripts/deploy-cf.mjs --check",
+    "deploy:setup": "node scripts/deploy-cf.mjs",
+    "deploy:kv": "node scripts/deploy-cf.mjs --create-kv",
+    "favicons": "node scripts/generate-favicons.mjs"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
@@ -31,6 +35,7 @@
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.1.0",
     "@testing-library/user-event": "^14.5.2",
+    "@types/node": "^26.4.0",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^6.1.0",

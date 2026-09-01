@@ -43,13 +43,14 @@ describe('privacy-safe analytics', () => {
     expect(options.persistence).toBe('memory');
 
     analytics.track('practice_attempt_completed', { mode: 'oral', score: 72 });
-    expect(mocks.capture).toHaveBeenCalledTimes(1);
-    const [eventName, properties] = mocks.capture.mock.calls[0] as [string, Record<string, unknown>];
+    // app_loaded from initAnalytics + practice_attempt_completed = 2 calls
+    expect(mocks.capture).toHaveBeenCalledTimes(2);
+    const [eventName, properties] = mocks.capture.mock.calls[1] as [string, Record<string, unknown>];
     expect(eventName).toBe('practice_attempt_completed');
     expect(properties.score).toBe(72);
 
     analytics.trackPageView('practice');
-    expect(mocks.capture.mock.calls[1][0]).toBe('$pageview');
+    expect(mocks.capture.mock.calls[2][0]).toBe('$pageview');
   });
 
   it('initializes exactly once even when called repeatedly', async () => {

@@ -1,0 +1,19 @@
+name = "kazicoach-tz"
+compatibility_date = "2025-01-01"
+pages_build_output_dir = "dist"
+
+# ── Environment variables (set via Cloudflare dashboard, not here) ──────
+# GEMINI_API_KEY       — server-side only
+# GEMINI_MODEL         — default: gemini-2.5-flash
+# TURNSTILE_SECRET_KEY — server-side only
+# TURNSTILE_SITE_KEY   — public widget key
+# RATE_LIMIT_MAX       — default: 10
+# VITE_PUBLIC_POSTHOG_KEY   — public (VITE_ prefix)
+# VITE_PUBLIC_POSTHOG_HOST  — public (VITE_ prefix)
+
+# ── KV namespace binding for durable rate limiting (optional) ────────────
+# Create with: npx wrangler kv namespace create RATE_LIMIT_KV
+# Then uncomment and fill in the id:
+# [[kv_namespaces]]
+# binding = "RATE_LIMIT_KV"
+# id = "YOUR_KV_NAMESPACE_ID"

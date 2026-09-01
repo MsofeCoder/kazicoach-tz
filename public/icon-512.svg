@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="80" fill="#073c35"/>
+  <path d="M256 72 L396 136 L396 256 C396 340 338 398 256 432 C174 398 116 340 116 256 L116 136 Z" fill="none" stroke="#c8e6c9" stroke-width="16" stroke-linejoin="round"/>
+  <path d="M192 262 L240 310 L332 214" fill="none" stroke="#c8e6c9" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="256" y="486" text-anchor="middle" font-family="system-ui,sans-serif" font-size="42" font-weight="700" fill="#c8e6c9">KaziCoach TZ</text>
+</svg>
