@@ -1,5 +1,7 @@
 # Checkpoint — local v2 review
 
+Latest corrective work: [CORRECTIVE_CHECKPOINT.md](CORRECTIVE_CHECKPOINT.md). 52 unit tests and 8 PostgreSQL authorization scenarios pass; selected mobile cases and physical-phone WhatsApp checks pass. Remaining Plus/admin mobile UAT is explicitly pending browser-tool access. See that report before treating older evidence below as current.
+
 Branch: `feature/kazicoach-v2`, created from local master `bba3502`. Master is unchanged. No push, merge, deployment, hosted project inspection or hosted mutation.
 
 | Phase | Implementation | Evidence / remaining work |

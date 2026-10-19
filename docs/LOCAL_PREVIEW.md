@@ -1,5 +1,7 @@
 # Local preview and verification
 
+Latest correction: setup fills a blank local contact setting with the approved `+255688010595` through the audited admin RPC and preserves subsequent changes. Each package button opens WhatsApp with package/price/duration only. See [CORRECTIVE_CHECKPOINT.md](CORRECTIVE_CHECKPOINT.md) for current validation and pending mobile steps.
+
 Requires Node 22.19+ (CI uses Node 22), Docker Desktop and Supabase CLI 2.121.0. No hosted project, payment gateway or paid AI is required.
 
 ```powershell

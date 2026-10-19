@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.0.0 corrective local review — 2026-10-19
+- Configure approved local business WhatsApp through audited admin settings and generate package-specific privacy-minimized upgrade links.
+- Restrict mixed voices to Plus in all selectors and speech runtime; keep Basic/Free single-coach practice intact.
+- Apply Basic/Plus ordering, clear account form state on logout/switch and prevent accidental email appending.
+- Record contact changes with before/after values; isolate integration/UAT fixtures from existing review data.
+- Document the three moderate dependency entries and safe remediation, plus recovery/retention recommendations awaiting owner approval.
+- 52 unit tests and 8 PostgreSQL scenarios pass; physical-phone WhatsApp handoff confirmed by owner. Remaining mobile Plus/admin checks pending browser access. Billing/hosted services/production unchanged.
+
 ## 2.0.0 — local preview, unreleased
 - Promote v2 planning guidance to root documentation; preserve v1 workspace and offline practice.
 - Add isolated schema/RLS tests, local-only account and consent-based progress foundation, trusted entitlements and testimonial moderation.
