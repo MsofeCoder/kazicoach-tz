@@ -1,4 +1,5 @@
-interface Env {
+import { premiumAccess, type AccessEnv } from '../lib/access';
+interface Env extends AccessEnv {
   GEMINI_API_KEY?: string;
   GEMINI_MODEL?: string;
 }
@@ -14,13 +15,28 @@ const json = (body: unknown, status = 200) => new Response(JSON.stringify(body),
 
 export const onRequestPost = async (context: { request: Request; env: Env }) => {
   if (!context.env.GEMINI_API_KEY) return json({ error: 'AI generation is not configured.' }, 503);
+  const denied=await premiumAccess(context.request,context.env);
+  if(denied) return json({error:denied.error},denied.status);
 
   const length = Number(context.request.headers.get('content-length') || 0);
   if (length > 120_000) return json({ error: 'Request is too large.' }, 413);
 
   let body: { material?: string; materialName?: string; role?: string; organization?: string };
   try {
-    body = await context.request.json();
+    if(!context.request.body) return json({error:'Invalid JSON request.'},400);
+    const reader=context.request.body.getReader();
+    const chunks:Uint8Array[]=[]; let total=0;
+    while(true) {
+      const {done,value}=await reader.read(); if(done) break;
+      total+=value.byteLength;
+      if(total>120_000) {await reader.cancel(); return json({error:'Request is too large.'},413);}
+      chunks.push(value);
+    }
+    const bytes=new Uint8Array(total);let offset=0;
+    for(const chunk of chunks) {bytes.set(chunk,offset);offset+=chunk.length;}
+    const parsed:unknown=JSON.parse(new TextDecoder().decode(bytes));
+    if(!parsed||typeof parsed!=='object'||Array.isArray(parsed)) return json({error:'Invalid JSON request.'},400);
+    body=parsed;
   } catch {
     return json({ error: 'Invalid JSON request.' }, 400);
   }
