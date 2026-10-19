@@ -32,6 +32,7 @@ try {
       ),
       "Bundle contains a privileged key value",
     );
+    assert.ok(!/sprintf-js|sprintf\.parse|ArgumentParser|argparse/.test(readFileSync(`dist/assets/${file}`,'utf8')),'Unneeded vulnerable CLI dependency entered a browser bundle');
   }
   console.log(
     `Smoke passed: app shell and ${assets.length} offline assets; no privileged key markers.`,

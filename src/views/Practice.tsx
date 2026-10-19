@@ -8,7 +8,7 @@ import { categoryLabels, memoryAids, oralQuestions, panelMemberForQuestion, pane
 import { useApp } from '../context';
 import { realisticCoachNote } from '../lib/coaching';
 import { scoreAnswer } from '../lib/scoring';
-import { selectPanelVoice, voiceDelivery, voiceStyleOptions } from '../lib/voices';
+import { selectPanelVoice, voiceDelivery, availableVoiceStyles, accessibleVoiceStyle } from '../lib/voices';
 import type { OralQuestion, QuestionCategory, ScoreResult, VoiceStyle } from '../types';
 import { useAccount } from '../accounts';
 import { trialAvailable } from '../lib/trial';
@@ -22,7 +22,9 @@ function formatTime(seconds: number) {
 
 function PanelIdentity({ category, questionIndex, voiceStyle, onVoiceStyle }: { category: QuestionCategory; questionIndex: number; voiceStyle: VoiceStyle; onVoiceStyle: (style: VoiceStyle) => void }) {
   const {premium}=useAccount();
-  if(premium!=='plus') return <div className="panel-identity"><strong>Interview coach</strong><label className="voice-select">Voice<select aria-label="Coach voice" value={voiceStyle} onChange={event=>onVoiceStyle(event.target.value as VoiceStyle)}>{voiceStyleOptions.map(option=><option key={option.value} value={option.value}>{option.label}</option>)}</select></label></div>;
+  const options=availableVoiceStyles(premium);
+  const selectedStyle=accessibleVoiceStyle(voiceStyle,premium);
+  if(premium!=='plus') return <div className="panel-identity"><strong>Interview coach</strong><label className="voice-select">Voice<select aria-label="Coach voice" value={selectedStyle} onChange={event=>onVoiceStyle(accessibleVoiceStyle(event.target.value as VoiceStyle,premium))}>{options.map(option=><option key={option.value} value={option.value}>{option.label}</option>)}</select></label></div>;
   const member = panelMemberForQuestion(category, questionIndex);
   const activeIndex = panelMembers.findIndex(item => item.id === member.id);
   return (
@@ -34,7 +36,7 @@ function PanelIdentity({ category, questionIndex, voiceStyle, onVoiceStyle }: { 
       <div className="panel-faces" aria-label="Five-member interview panel">
         {panelMembers.map((item, index) => <span key={item.id} className={item.id === member.id ? 'active' : ''} title={`${item.role}: ${item.style}`}>{index + 1}</span>)}
       </div>
-      <label className="voice-select"><Volume2 size={15} /><span>Voice<select value={voiceStyle} onChange={event => onVoiceStyle(event.target.value as VoiceStyle)}>{voiceStyleOptions.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}</select></span></label>
+      <label className="voice-select"><Volume2 size={15} /><span>Voice<select aria-label="Panel voice" value={selectedStyle} onChange={event => onVoiceStyle(event.target.value as VoiceStyle)}>{options.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}</select></span></label>
       <span className="simulation-pill"><i /> 5-person simulation</span>
     </div>
   );
@@ -110,8 +112,9 @@ function OralPractice() {
     }
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
-    const voice = selectPanelVoice(state.preferences.voiceStyle, currentMemberIndex);
-    const delivery = voiceDelivery(state.preferences.voiceStyle, state.preferences.speechRate);
+    const allowedStyle=accessibleVoiceStyle(state.preferences.voiceStyle,premium);
+    const voice = selectPanelVoice(allowedStyle, currentMemberIndex);
+    const delivery = voiceDelivery(allowedStyle, state.preferences.speechRate);
     if (voice) {
       utterance.voice = voice;
       utterance.lang = voice.lang;

@@ -1,4 +1,5 @@
 import type { VoiceStyle } from '../types';
+import type { PackageId } from './plans';
 
 export const voiceStyleOptions: Array<{ value: VoiceStyle; label: string; note: string }> = [
   { value: 'mixed', label: 'Mixed 5-person panel', note: 'Different voices by panel member' },
@@ -7,6 +8,14 @@ export const voiceStyleOptions: Array<{ value: VoiceStyle; label: string; note: 
   { value: 'soft', label: 'Soft interviewer', note: 'Gentle pace and volume' },
   { value: 'deep', label: 'Deep interviewer', note: 'Lower pitch and measured pace' },
 ];
+
+export function availableVoiceStyles(premium:PackageId|null) {
+  return voiceStyleOptions.filter(option=>premium==='plus'||option.value!=='mixed');
+}
+
+export function accessibleVoiceStyle(style:VoiceStyle,premium:PackageId|null):VoiceStyle {
+  return style==='mixed' && premium!=='plus'?'female':style;
+}
 
 const maleHints = ['male', 'david', 'mark', 'james', 'daniel', 'george', 'arthur', 'ryan', 'liam', 'thomas', 'oliver', 'alex', 'fred'];
 const femaleHints = ['female', 'zira', 'hazel', 'susan', 'samantha', 'victoria', 'karen', 'moira', 'fiona', 'ava', 'aria', 'salli', 'joanna'];

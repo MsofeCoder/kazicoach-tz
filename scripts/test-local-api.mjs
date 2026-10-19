@@ -29,21 +29,34 @@ const owner = make(),
   b = make(),
   anon = make(),
   disposable = make();
-for (const [client, name] of [
-  [owner, "owner"],
-  [a, "learner"],
-  [b, "other"],
-]) {
+for (const [client, name] of [[owner, "owner"]]) {
   const { error } = await client.auth.signInWithPassword({
     email: `${name}@kazicoach.test`,
     password: "LocalReview123!",
   });
   assert.equal(error, null, "Run npm run preview:setup first");
 }
+// Do not reuse the review learners: owner UAT may have profiles/testimonials there.
+for(const [client,label] of [[a,'a'],[b,'b']]) {
+  const created=await client.auth.signUp({email:`integration-${label}-${randomUUID()}@kazicoach.test`,password:'LocalReview123!'});
+  assert.equal(created.error,null,'Could not create disposable integration learner');
+}
 const aid = (await a.auth.getUser()).data.user.id;
 const id = randomUUID();
 let testimonialId;
 try {
+  // Neither editable JWT metadata nor direct API calls confer privileged roles.
+  const originalMetadata=(await a.auth.getUser()).data.user.user_metadata;
+  assert.equal((await a.auth.updateUser({data:{premium:true,role:'super_admin'}})).error,null);
+  assert.equal((await a.rpc('kc_is_admin')).data,false);
+  assert.ok((await a.rpc('kc_set_contact',{phone:'255688010595'})).error);
+  assert.ok((await anon.rpc('kc_set_contact',{phone:'255688010595'})).error);
+  assert.equal((await a.auth.updateUser({data:{...originalMetadata,premium:null,role:null}})).error,null);
+  const beforeContact=(await owner.from('kc_settings').select('whatsapp').single()).data.whatsapp;
+  assert.equal((await owner.rpc('kc_set_contact',{phone:beforeContact})).error,null);
+  const afterContact=(await owner.rpc('kc_admin_overview')).data.audit.find(entry=>entry.action==='contact');
+  assert.equal(afterContact.details.whatsapp,beforeContact);
+  assert.equal(afterContact.details.previous_whatsapp,beforeContact);
   assert.equal(
     (
       await a
@@ -198,5 +211,7 @@ try {
     payload: {},
   });
   await disposable.rpc("kc_delete_account");
+  await a.rpc('kc_delete_account');
+  await b.rpc('kc_delete_account');
   for (const client of [owner, a, b, disposable]) await client.auth.signOut();
 }

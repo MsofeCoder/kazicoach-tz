@@ -822,4 +822,6 @@ textarea[readonly] { color: #46534f; background: #f6f8f5; }
 .account-section .data-actions { flex-wrap: wrap; justify-content: flex-start; }
 .account-section .data-actions .button { flex: 0 0 auto; min-width: 110px; padding: 10px 14px; }
 .account-section pre { white-space: pre-wrap; }
+.package-card { display: flex; flex-direction: column; gap: 10px; }
+.package-card .button { margin-top: auto; padding: 10px 12px; min-height: 44px; text-align: center; }
 @media(max-width: 650px) { .package-grid { grid-template-columns: 1fr; } .account-form .button { width: 100%; } }

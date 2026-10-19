@@ -45,6 +45,8 @@ for (const name of ["owner", "learner", "other"]) {
 const query = `do $$ begin
   if not exists(select 1 from kc_private.admins) then
     insert into kc_private.admins values('${ids.owner}');
+    insert into kc_private.audit(actor_id,action,target,details)
+      values('${ids.owner}','bootstrap_admin','${ids.owner}','{"environment":"local-review"}');
   elsif not exists(select 1 from kc_private.admins where user_id='${ids.owner}') then
     raise exception 'Existing administrator differs; do not replace it automatically';
   end if;
@@ -68,6 +70,16 @@ if (bootstrap.status !== 0)
   throw new Error(
     "Local administrator bootstrap failed. No remote bootstrap is supported.",
   );
+// Approved public business contact; never overwrite subsequent admin changes.
+const ownerLogin=await client.auth.signInWithPassword({email:'owner@kazicoach.test',password:'LocalReview123!'});
+if(ownerLogin.error) throw new Error('Cannot authenticate the local review administrator.');
+const contact=await client.from('kc_settings').select('whatsapp').single();
+if(contact.error) throw new Error('Cannot read local contact settings.');
+if(contact.data.whatsapp==='') {
+  const configured=await client.rpc('kc_set_contact',{phone:'255688010595'});
+  if(configured.error) throw new Error('Could not configure the approved business contact through the audited admin RPC.');
+}
+await client.auth.signOut();
 if (!existsSync(".env.local"))
   writeFileSync(
     ".env.local",

@@ -13,6 +13,7 @@ import { useApp } from "./context";
 import {
   activePackage,
   launchPackages,
+  orderedPackages,
   type Entitlement,
   type Package,
 } from "./lib/plans";
@@ -88,9 +89,9 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     if (!cloud) return;
     const epoch = generation.current;
     const user = owner.current;
-    const products = await cloud.from("kc_packages").select("*");
+    const products = await cloud.from("kc_packages").select("*").order('id',{ascending:true});
     if (epoch !== generation.current) return;
-    if (!products.error && products.data.length) setPackages(products.data);
+    if (!products.error && products.data.length) setPackages(orderedPackages(products.data));
     const contact = await cloud.from("kc_settings").select("whatsapp").single();
     if (epoch !== generation.current) return;
     if (!contact.error) setWhatsapp(contact.data.whatsapp);

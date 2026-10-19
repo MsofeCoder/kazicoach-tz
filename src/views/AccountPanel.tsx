@@ -1,8 +1,8 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { cloud } from "../lib/cloud";
 import { useAccount } from "../accounts";
 import { summarizeProgress, queueKey, readQueue } from "../lib/sync";
-import type { Package } from "../lib/plans";
+import { orderedPackages, whatsappUpgradeUrl, type Package } from "../lib/plans";
 
 type Testimonial = {
   id: string;
@@ -42,7 +42,7 @@ export function Plans() {
         questions per browser trial.
       </p>
       <div className="package-grid">
-        {packages.map((p) => (
+        {orderedPackages(packages).map((p) => (
           <div className="package-card" key={p.id}>
             <h3>Premium {p.id === "plus" ? "Plus" : "Basic"}</h3>
             <strong>
@@ -62,6 +62,7 @@ export function Plans() {
               Cloud requests have an abuse limit of {p.daily_cloud_limit} per
               day.
             </small>
+            {whatsappUpgradeUrl(whatsapp,p)&&<a className="button primary" href={whatsappUpgradeUrl(whatsapp,p)!} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer">Upgrade to {p.id==='plus'?'Plus':'Basic'} via WhatsApp</a>}
           </div>
         ))}
       </div>
@@ -74,16 +75,7 @@ export function Plans() {
         Activation is arranged with the developer through WhatsApp after payment
         verification. Billing is disabled during review.
       </p>
-      {whatsapp ? (
-        <a
-          className="button secondary"
-          href={`https://wa.me/${whatsapp}`}
-          target="_blank"
-          rel="noreferrer"
-        >
-          Contact developer on WhatsApp
-        </a>
-      ) : (
+      {!whatsapp && (
         <p>The developer’s WhatsApp contact is awaiting configuration.</p>
       )}
     </article>
@@ -105,7 +97,7 @@ function PackageEditor({
         void run("package", item.id, draft);
       }}
     >
-      <h3>Premium {item.id}</h3>
+      <h3>Premium {item.id==='plus'?'Plus':'Basic'}</h3>
       {(
         [
           ["price_tzs", "Price (TSh)", 0, 10000000],
@@ -133,12 +125,13 @@ function PackageEditor({
   );
 }
 function Administration() {
-  const { admin, packages, refresh } = useAccount();
+  const { admin, packages, refresh,whatsapp } = useAccount();
   const [overview, setOverview] = useState<Overview | null>(null);
   const [target, setTarget] = useState("");
   const [plan, setPlan] = useState("basic");
   const [message, setMessage] = useState("");
-  const [phone, setPhone] = useState("");
+  const [phone, setPhone] = useState(whatsapp);
+  useEffect(()=>setPhone(whatsapp),[whatsapp]);
   if (!admin || !cloud) return null;
   const client = cloud;
   const load = async () => {
@@ -212,7 +205,7 @@ function Administration() {
         </button>
       </form>
       <div className="package-grid">
-        {packages.map((p) => (
+        {orderedPackages(packages).map((p) => (
           <PackageEditor
             key={`${p.id}-${p.price_tzs}-${p.duration_days}-${p.free_questions}-${p.daily_cloud_limit}`}
             item={p}
@@ -285,7 +278,7 @@ function Administration() {
     </article>
   );
 }
-export default function AccountPanel() {
+function AccountPanelContent() {
   const account = useAccount();
   const {
     session,
@@ -306,6 +299,13 @@ export default function AccountPanel() {
   const [consent, setConsent] = useState(false);
   const [publicItems, setPublicItems] = useState<Testimonial[] | null>(null);
   const summary = summarizeProgress(rows);
+  async function signOut() {
+    setEmail(''); setPassword(''); disableSync();
+    try {
+      const result=await cloud!.auth.signOut({scope:'local'});
+      if(result.error) setMessage('Sign-out did not complete. Please retry.');
+    } catch {setMessage('Sign-out did not complete. Please retry.');}
+  }
   async function authenticate(event: FormEvent, signup = false) {
     event.preventDefault();
     if (!cloud) return;
@@ -434,6 +434,11 @@ export default function AccountPanel() {
               Email
               <input
                 type="email"
+                name="email"
+                inputMode="email"
+                autoCapitalize="none"
+                spellCheck={false}
+                onFocus={event=>event.currentTarget.select()}
                 autoComplete="username"
                 required
                 value={email}
@@ -502,8 +507,7 @@ export default function AccountPanel() {
               <button
                 className="button secondary"
                 onClick={() => {
-                  disableSync();
-                  void cloud!.auth.signOut({ scope: "local" });
+                  void signOut();
                 }}
               >
                 Sign out
@@ -653,4 +657,10 @@ export default function AccountPanel() {
       <Administration />
     </>
   );
+}
+
+export default function AccountPanel() {
+  const {session}=useAccount();
+  // Recreate account-specific form state on logout, expiry or account switching.
+  return <AccountPanelContent key={session?.user.id??'guest'}/>;
 }

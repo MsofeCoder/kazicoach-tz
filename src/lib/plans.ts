@@ -27,6 +27,18 @@ export const launchPackages: Package[] = [
     daily_cloud_limit: 100,
   },
 ];
+export function orderedPackages(packages: readonly Package[]): Package[] {
+  const rank:Record<PackageId,number>={basic:0,plus:1};
+  return [...packages].sort((a,b)=>rank[a.id]-rank[b.id]);
+}
+
+export function whatsappUpgradeUrl(phone:string, selected:Package):string|null {
+  if(!/^[1-9][0-9]{7,14}$/.test(phone)) return null;
+  const label=selected.id==='plus'?'Plus':'Basic';
+  // Deliberate allowlist: never add an email, account ID, token, answer or material.
+  const message=`Hello KaziCoach TZ, I would like Premium ${label} (TSh ${selected.price_tzs.toLocaleString('en-TZ')} for ${selected.duration_days} days). Please share payment and activation instructions.`;
+  return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+}
 export function activePackage(
   entitlement: Entitlement | null,
   now = Date.now(),

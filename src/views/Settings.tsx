@@ -6,11 +6,15 @@ import {
 import { candidate } from '../data';
 import { useApp } from '../context';
 import { clearState, defaultState } from '../lib/storage';
-import { selectPanelVoice, voiceDelivery, voiceStyleOptions } from '../lib/voices';
+import { selectPanelVoice, voiceDelivery, availableVoiceStyles, accessibleVoiceStyle } from '../lib/voices';
 import AccountPanel from './AccountPanel';
+import { useAccount } from '../accounts';
 
 export default function SettingsView() {
   const { state, setState, notify, setView } = useApp();
+  const {premium}=useAccount();
+  const voiceStyle=accessibleVoiceStyle(state.preferences.voiceStyle,premium);
+  const voiceOptions=availableVoiceStyles(premium);
 
   const updatePreference = <K extends keyof typeof state.preferences>(key: K, value: (typeof state.preferences)[K]) => {
     setState(current => ({ ...current, preferences: { ...current.preferences, [key]: value } }));
@@ -20,8 +24,8 @@ export default function SettingsView() {
     if (!('speechSynthesis' in window)) { notify('Read-aloud is not available in this browser.'); return; }
     window.speechSynthesis.cancel();
     const speech = new SpeechSynthesisUtterance('Good morning, Nyunyusa. Please give us five clear points, then connect your answer to the inspector role.');
-    const voice = selectPanelVoice(state.preferences.voiceStyle, 0);
-    const delivery = voiceDelivery(state.preferences.voiceStyle, state.preferences.speechRate);
+    const voice = selectPanelVoice(voiceStyle, 0);
+    const delivery = voiceDelivery(voiceStyle, state.preferences.speechRate);
     if (voice) { speech.voice = voice; speech.lang = voice.lang; } else speech.lang = 'en-GB';
     speech.rate = delivery.rate; speech.pitch = delivery.pitch; speech.volume = delivery.volume;
     window.speechSynthesis.speak(speech);
@@ -49,7 +53,7 @@ export default function SettingsView() {
           <article className="panel settings-section">
             <div className="settings-heading"><span><SlidersHorizontal size={19} /></span><div><h2>Coaching preferences</h2><p>Choose how the practice room supports you.</p></div></div>
             <div className="setting-row"><div><Globe2 size={18} /><span><strong>Kiswahili coach hints</strong><small>Keep panel questions in English and show short Kiswahili guidance.</small></span></div><button className={`toggle ${state.preferences.swahiliCoach ? 'on' : ''}`} onClick={() => updatePreference('swahiliCoach', !state.preferences.swahiliCoach)} aria-pressed={state.preferences.swahiliCoach}><i /></button></div>
-            <div className="setting-row"><div><Users size={18} /><span><strong>Interviewer voice</strong><small>Mix the five panel voices, or choose male, female, soft or deep delivery.</small></span></div><select className="settings-select" value={state.preferences.voiceStyle} onChange={event => updatePreference('voiceStyle', event.target.value as typeof state.preferences.voiceStyle)}>{voiceStyleOptions.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}</select></div>
+            <div className="setting-row"><div><Users size={18} /><span><strong>Interviewer voice</strong><small>{premium==='plus'?'Mix the five panel voices, or choose male, female, soft or deep delivery.':'Choose male, female, soft or deep delivery.'}</small></span></div><select aria-label="Interviewer voice" className="settings-select" value={voiceStyle} onChange={event => updatePreference('voiceStyle', accessibleVoiceStyle(event.target.value as typeof state.preferences.voiceStyle,premium))}>{voiceOptions.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}</select></div>
             <div className="setting-row slider-setting"><div><Gauge size={18} /><span><strong>Read-aloud speed</strong><small>Applies to browser text-to-speech in the practice room.</small></span></div><div className="range-control"><input type="range" min="0.7" max="1.2" step="0.05" value={state.preferences.speechRate} onChange={event => updatePreference('speechRate', Number(event.target.value))} /><strong>{state.preferences.speechRate.toFixed(2)}×</strong><button className="button ghost small" onClick={testVoice}><Volume2 size={15} /> Test</button></div></div>
             <div className="setting-row disabled"><div><Bell size={18} /><span><strong>Study reminders</strong><small>Coming in Phase 1.1. Browser reminders require explicit permission.</small></span></div><em>Coming soon</em></div>
           </article>
