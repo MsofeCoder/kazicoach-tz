@@ -7,6 +7,7 @@ import { useRef, useState } from 'react';
 import { candidate, oralQuestions } from '../data';
 import { useApp } from '../context';
 import { createLocalQuestions, extractMaterial } from '../lib/materials';
+import { useAccount } from '../accounts';
 import type { Material, OralQuestion, QuestionCategory } from '../types';
 
 const formatBytes = (value: number) => value < 1024 ? `${value} B` : value < 1024 * 1024 ? `${Math.round(value / 1024)} KB` : `${(value / (1024 * 1024)).toFixed(1)} MB`;
@@ -33,6 +34,7 @@ function validateAIQuestion(value: any, index: number): OralQuestion | null {
 }
 
 export default function Materials() {
+  const {session,premium}=useAccount();
   const { state, setState, notify, startPractice } = useApp();
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
@@ -84,12 +86,13 @@ export default function Materials() {
   };
 
   const aiGenerate = async () => {
+    if(!session||!premium) {notify('Cloud coaching requires an active premium account. Local generation remains available.');return;}
     if (!selected?.extractedText) { notify('Select a text-based material first.'); return; }
     if (!window.confirm(`Send up to 30,000 characters from “${selected.name}” to the configured Gemini service? Do not continue if it contains information you do not want processed by the provider.`)) return;
     setAiLoading(true);
     try {
       const response = await fetch('/api/generate', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization:`Bearer ${session.access_token}` },
         body: JSON.stringify({
           materialName: selected.name,
           material: selected.extractedText.slice(0, 30_000),

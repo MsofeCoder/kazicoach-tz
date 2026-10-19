@@ -2,13 +2,18 @@ import {
   ArrowRight, Award, BarChart3, BookOpenCheck, CheckCircle2, Flame, Medal,
   Mic2, Sparkles, Target, TrendingUp, Trophy, Zap,
 } from 'lucide-react';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { categoryLabels, oralQuestions, writtenQuestions } from '../data';
 import { useApp } from '../context';
 import { calculateReadiness } from '../lib/scoring';
 import type { QuestionCategory } from '../types';
+import { useAccount } from '../accounts';
+import { cloud } from '../lib/cloud';
 
 export default function Progress() {
+  const {premium}=useAccount();
+  const [analysis,setAnalysis]=useState<{category:QuestionCategory;attempts:number;average:number;strong_answers:number}[]|null>(null);
+  const [analysisStatus,setAnalysisStatus]=useState('');
   const { state, startPractice } = useApp();
   const attempts = state.attempts;
   const readiness = calculateReadiness(attempts.map(item => item.score));
@@ -59,6 +64,7 @@ export default function Progress() {
           <p><Sparkles size={15} /> {180 - (state.xp % 180)} XP to your next level</p>
         </article>
       </section>
+      {premium==='plus'&&<section className="panel settings-section account-section"><h2>Premium Plus · advanced cloud progress</h2><p>Analysis uses only the summaries you selected for sync. Start with the lowest-scoring category and rehearse two missing concepts. Cloud scores are self-reported coaching signals.</p><button className="button secondary" onClick={()=>{void cloud?.rpc('kc_advanced_progress').then(({data,error})=>{setAnalysisStatus(error?'Plus access could not be verified. Refresh your access or retry when connected.':'Analysis refreshed.');if(!error)setAnalysis(data);});}}>Analyze synced progress</button><p role="status">{analysisStatus}</p>{analysis?.map(row=><div className="setting-row" key={row.category}><span>{categoryLabels[row.category]} · {row.attempts} attempts · average {row.average}%</span><strong>{row.strong_answers>=3?'Consistency milestone unlocked':`${Math.max(0,3-row.strong_answers)} strong answers to consistency milestone`}</strong></div>)}</section>}
 
       <section className="progress-content-grid">
         <article className="panel trend-card">

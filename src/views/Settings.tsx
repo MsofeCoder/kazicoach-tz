@@ -7,6 +7,7 @@ import { candidate } from '../data';
 import { useApp } from '../context';
 import { clearState, defaultState } from '../lib/storage';
 import { selectPanelVoice, voiceDelivery, voiceStyleOptions } from '../lib/voices';
+import AccountPanel from './AccountPanel';
 
 export default function SettingsView() {
   const { state, setState, notify, setView } = useApp();
@@ -44,6 +45,7 @@ export default function SettingsView() {
 
       <section className="settings-grid">
         <div className="settings-main">
+          <AccountPanel />
           <article className="panel settings-section">
             <div className="settings-heading"><span><SlidersHorizontal size={19} /></span><div><h2>Coaching preferences</h2><p>Choose how the practice room supports you.</p></div></div>
             <div className="setting-row"><div><Globe2 size={18} /><span><strong>Kiswahili coach hints</strong><small>Keep panel questions in English and show short Kiswahili guidance.</small></span></div><button className={`toggle ${state.preferences.swahiliCoach ? 'on' : ''}`} onClick={() => updatePreference('swahiliCoach', !state.preferences.swahiliCoach)} aria-pressed={state.preferences.swahiliCoach}><i /></button></div>
@@ -60,7 +62,7 @@ export default function SettingsView() {
           </article>
 
           <article className="panel settings-section danger-section">
-            <div className="settings-heading"><span><HardDrive size={19} /></span><div><h2>Your local data</h2><p>There is no account or cloud database in this MVP.</p></div></div>
+            <div className="settings-heading"><span><HardDrive size={19} /></span><div><h2>Your local data</h2><p>Your private workspace stays in this browser. Account data has separate controls above.</p></div></div>
             <div className="data-summary"><span><strong>{state.attempts.length}</strong><small>Attempts</small></span><span><strong>{state.materials.length}</strong><small>Materials</small></span><span><strong>{state.customQuestions.length}</strong><small>Custom cards</small></span><span><strong>{state.xp}</strong><small>XP</small></span></div>
             <div className="data-actions"><button className="button secondary" onClick={exportData}><FileJson size={16} /> Export JSON</button><button className="button danger" onClick={reset}><Trash2 size={16} /> Reset all data</button></div>
           </article>

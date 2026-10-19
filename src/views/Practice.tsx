@@ -10,6 +10,9 @@ import { realisticCoachNote } from '../lib/coaching';
 import { scoreAnswer } from '../lib/scoring';
 import { selectPanelVoice, voiceDelivery, voiceStyleOptions } from '../lib/voices';
 import type { OralQuestion, QuestionCategory, ScoreResult, VoiceStyle } from '../types';
+import { useAccount } from '../accounts';
+import { trialAvailable } from '../lib/trial';
+import { Plans } from './AccountPanel';
 
 const categories: Array<'all' | QuestionCategory> = ['all', 'personal', 'role', 'technical', 'scenario', 'ethics'];
 
@@ -18,6 +21,8 @@ function formatTime(seconds: number) {
 }
 
 function PanelIdentity({ category, questionIndex, voiceStyle, onVoiceStyle }: { category: QuestionCategory; questionIndex: number; voiceStyle: VoiceStyle; onVoiceStyle: (style: VoiceStyle) => void }) {
+  const {premium}=useAccount();
+  if(premium!=='plus') return <div className="panel-identity"><strong>Interview coach</strong><label className="voice-select">Voice<select aria-label="Coach voice" value={voiceStyle} onChange={event=>onVoiceStyle(event.target.value as VoiceStyle)}>{voiceStyleOptions.map(option=><option key={option.value} value={option.value}>{option.label}</option>)}</select></label></div>;
   const member = panelMemberForQuestion(category, questionIndex);
   const activeIndex = panelMembers.findIndex(item => item.id === member.id);
   return (
@@ -36,6 +41,7 @@ function PanelIdentity({ category, questionIndex, voiceStyle, onVoiceStyle }: { 
 }
 
 function OralPractice() {
+  const {premium}=useAccount();
   const { state, setState, recordAttempt, notify, practiceCategory } = useApp();
   const [category, setCategory] = useState<'all' | QuestionCategory>(practiceCategory);
   const allQuestions = useMemo(() => [...oralQuestions, ...state.customQuestions], [state.customQuestions]);
@@ -53,7 +59,7 @@ function OralPractice() {
 
   const question = questions[Math.min(index, Math.max(0, questions.length - 1))] as OralQuestion | undefined;
   const currentMember = question ? panelMemberForQuestion(question.category, index) : panelMembers[0];
-  const currentMemberIndex = panelMembers.findIndex(item => item.id === currentMember.id);
+  const currentMemberIndex = premium==='plus'?panelMembers.findIndex(item => item.id === currentMember.id):0;
   const updateVoiceStyle = (voiceStyle: VoiceStyle) => setState(current => ({ ...current, preferences: { ...current.preferences, voiceStyle } }));
 
   useEffect(() => {
@@ -196,7 +202,7 @@ function OralPractice() {
     <div className="practice-layout">
       <section className="practice-main">
         <PanelIdentity category={question.category} questionIndex={index} voiceStyle={state.preferences.voiceStyle} onVoiceStyle={updateVoiceStyle} />
-        <div className="device-voice-note"><Users size={14} /><span>{currentMember.role} asks this question · voice on this device: <strong>{activeVoiceName}</strong></span></div>
+        <div className="device-voice-note"><Users size={14} /><span>{premium==='plus'?currentMember.role:'Your coach'} asks this question · voice on this device: <strong>{activeVoiceName}</strong></span></div>
         <div className="category-scroller" aria-label="Question category">
           {categories.map(item => <button key={item} className={category === item ? 'active' : ''} onClick={() => selectCategory(item)}>{item === 'all' ? 'All questions' : categoryLabels[item]}</button>)}
         </div>
@@ -405,7 +411,10 @@ function WrittenPractice() {
 }
 
 export default function Practice() {
-  const { practiceMode, setPracticeMode } = useApp();
+  const { practiceMode, setPracticeMode,trialUsed,setView } = useApp();
+  const {premium,packages}=useAccount();
+  const limit=packages.find(p=>p.id==='basic')?.free_questions??5;
+  if(!trialAvailable(trialUsed,limit,!!premium)) return <div className="page practice-page"><section className="page-title-row"><div><span className="eyebrow">Your next chapter</span><h1>You’ve completed your free trial</h1><p>Your scores and preparation materials are saved. Keep building confidence with Premium.</p></div></section><Plans/><div className="data-actions"><button className="button primary" onClick={()=>setView('settings')}>View account &amp; activation options</button><button className="button secondary" onClick={()=>setView('progress')}>Review my progress</button><button className="button secondary" onClick={()=>setView('materials')}>My preparation materials</button></div></div>;
   return (
     <div className="page practice-page">
       <section className="page-title-row">
@@ -415,6 +424,7 @@ export default function Practice() {
           <button className={practiceMode === 'written' ? 'active' : ''} onClick={() => setPracticeMode('written')}><BookOpen size={17} /> Written test</button>
         </div>
       </section>
+      {!premium&&<p className="trial-note" role="status">Free trial: {Math.max(0,limit-trialUsed)} scored questions remaining. No account required.</p>}
       {practiceMode === 'oral' ? <OralPractice /> : <WrittenPractice />}
     </div>
   );

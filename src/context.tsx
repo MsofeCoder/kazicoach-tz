@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { AppState, Attempt, PracticeMode, QuestionCategory, View } from './types';
 import { loadState, saveState, updateStreak } from './lib/storage';
+import { loadTrial, trialKey } from './lib/trial';
 
 interface AppContextValue {
   state: AppState;
@@ -12,6 +13,7 @@ interface AppContextValue {
   practiceCategory: 'all' | QuestionCategory;
   startPractice: (mode?: PracticeMode, category?: 'all' | QuestionCategory) => void;
   recordAttempt: (attempt: Attempt) => void;
+  trialUsed: number;
   toast: string | null;
   notify: (message: string) => void;
 }
@@ -20,6 +22,8 @@ const AppContext = createContext<AppContextValue | null>(null);
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AppState>(() => loadState());
+  const [trialUsed,setTrialUsed] = useState(()=>{try{return loadTrial(localStorage);}catch{return 0;}});
+  useEffect(()=>{try {localStorage.setItem(trialKey,String(trialUsed));} catch { /* Practice remains usable without storage. */ }},[trialUsed]);
   const [view, setView] = useState<View>('dashboard');
   const [practiceMode, setPracticeMode] = useState<PracticeMode>('oral');
   const [practiceCategory, setPracticeCategory] = useState<'all' | QuestionCategory>('all');
@@ -47,6 +51,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     },
     recordAttempt: (attempt) => {
+      setTrialUsed(current=>current+1);
       setState(current => {
         const activity = updateStreak(current);
         const xpEarned = 14 + Math.round(attempt.score / 8) + (attempt.score >= 80 ? 8 : 0);
@@ -59,8 +64,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       });
     },
     toast,
+    trialUsed,
     notify: (message) => setToast(message),
-  }), [state, view, practiceMode, practiceCategory, toast]);
+  }), [state, view, practiceMode, practiceCategory, toast,trialUsed]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }
