@@ -1,5 +1,11 @@
 # KaziCoach TZ
 
+## Version 2 local review
+
+Work is on `feature/kazicoach-v2`. Master and hosted services are unchanged. Optional local accounts, selected-summary sync, Basic/Plus packages, manual Super Admin activation, moderated testimonials and authorization tests are available for review. Billing is disabled.
+
+Start with [local preview instructions](docs/LOCAL_PREVIEW.md), [checkpoint](docs/STATUS.md), [audit](docs/REPO_AUDIT.md), [approved decisions](docs/DECISIONS.md) and [rollback](docs/ROLLBACK.md). Root [AGENTS.md](AGENTS.md) governs development. The existing v1 description below documents the original private role pack; v2 adds a five-scored-question guest trial and an upgrade invitation while preserving materials, local workspace data and export. Hosted operations enforce entitlements; bundled offline content uses advisory UI gating.
+
 A polished, offline-first Tanzanian public-service interview preparation MVP. The initial role pack prepares **Nyunyusa Twaha Mrisho** for **Radiation Safety Inspector II (Nuclear Physics)** at TAEC.
 
 ## Included
@@ -74,4 +80,4 @@ This is an independent educational tool—not an official PSRS, Ajira Portal, TA
 
 ## Project documents
 
-The product requirements document is at [`../PRD.md`](../PRD.md).
+The v2 requirements are in [docs/PRODUCT_REQUIREMENTS.md](docs/PRODUCT_REQUIREMENTS.md), with approved launch changes in [docs/DECISIONS.md](docs/DECISIONS.md).

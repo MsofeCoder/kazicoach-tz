@@ -1,0 +1,13 @@
+# Acceptance Tests
+- Guest can complete existing interview/written practice without login or network.
+- Existing local workspace remains readable after upgrade; no silent uploads.
+- Registered A cannot read or mutate B's profile, progress or testimonials.
+- Anonymous visitor cannot read private rows.
+- User cannot grant themselves premium or admin rights.
+- Entitlements are checked by trusted backend on premium operations.
+- Offline changes sync once after reconnection without duplicates.
+- Conflicting updates have deterministic, documented resolution.
+- Testimonial stays private until moderator approval and can be withdrawn.
+- Account deletion and export work as documented.
+- All repository checks pass and local preview is usable on desktop/mobile.
+- No push/merge/deploy occurs before approval.
