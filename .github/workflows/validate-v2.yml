@@ -19,7 +19,7 @@ jobs:
       - run: npm audit --audit-level=moderate
       - run: npm test
       - name: Pull isolated authorization-test database
-        run: docker pull postgres:16-alpine
+        run: docker pull postgres:17-alpine
         timeout-minutes: 5
       - run: npm run test:db
       - run: npm run lint

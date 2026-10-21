@@ -477,11 +477,12 @@ function AccountPanelContent() {
             <button
               type="button"
               className="button secondary"
-              disabled={busy || !email || password.length < 8}
+              disabled={busy || !email || password.length < 12}
               onClick={(e) => void authenticate(e, true)}
             >
               Create account
             </button>
+            <small>New accounts need at least 12 characters, with uppercase/lowercase letters, numbers and a symbol.</small>
           </form>
         ) : (
           <>

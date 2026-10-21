@@ -8,3 +8,6 @@ dist
 .DS_Store
 *.log
 .local-review/
+.wrangler/
+.dev.vars
+.dev.vars.*

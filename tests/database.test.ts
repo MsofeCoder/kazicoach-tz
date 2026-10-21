@@ -49,7 +49,7 @@ beforeAll(async () => {
     container,
     "-e",
     "POSTGRES_HOST_AUTH_METHOD=trust",
-    "postgres:16-alpine",
+    "postgres:17-alpine",
   ]);
   if (result.status !== 0)
     throw new Error(`Local Docker required: ${result.stderr}`);
@@ -222,11 +222,14 @@ describe.sequential(
       sql(`select public.kc_admin_action('activate','${a}','{"package_id":"plus"}');`,admin);
     });
     it('restricts contact updates to the admin and audits values atomically',()=>{
+      expect(sql('select whatsapp from public.kc_settings;')).toBe('255688010595');
+      expect(sql("select count(*) from kc_private.audit where action='bootstrap_contact';")).toBe('1');
+      sql("update public.kc_settings set whatsapp='255688010596';");
       expect(()=>sql("select public.kc_set_contact('255688010595');",a)).toThrow(/Forbidden/);
       expect(()=>sql("update public.kc_settings set whatsapp='255688010595';",a)).toThrow(/permission denied/);
       sql("select public.kc_set_contact('255688010595');",admin);
       expect(sql("select whatsapp from public.kc_settings;",b,'anon')).toBe('255688010595');
-      expect(sql("select details->>'previous_whatsapp',details->>'whatsapp' from kc_private.audit where action='contact' order by id desc limit 1;")).toBe('|255688010595');
+      expect(sql("select details->>'previous_whatsapp',details->>'whatsapp' from kc_private.audit where action='contact' order by id desc limit 1;")).toBe('255688010596|255688010595');
       const count=sql('select count(*) from kc_private.audit;');
       expect(()=>sql("select public.kc_set_contact('invalid?secret');",admin)).toThrow(/check constraint/);
       expect(sql('select count(*) from kc_private.audit;')).toBe(count);
