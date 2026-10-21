@@ -14,6 +14,11 @@ try {
   const scripts=readdirSync('dist/assets').filter(name=>name.endsWith('.js')).map(name=>readFileSync('dist/assets/'+name,'utf8')).join('\n');
   assert.ok(scripts.includes(base.KAZICOACH_RELEASE_SUPABASE_URL));assert.ok(scripts.includes(base.KAZICOACH_RELEASE_APP_ORIGIN));
   assert.ok(readFileSync('dist/_headers','utf8').includes("connect-src 'self' "+base.KAZICOACH_RELEASE_SUPABASE_URL));
+  const headersBeforeTests=readFileSync('dist/_headers','utf8');
+  const workerBeforeTests=readFileSync('dist/sw.js','utf8');
+  assert.equal(run('npm test',base).status,0,'Unit regression run failed');
+  assert.equal(readFileSync('dist/_headers','utf8'),headersBeforeTests,'Test-server shutdown must not replace release CSP');
+  assert.equal(readFileSync('dist/sw.js','utf8'),workerBeforeTests,'Test-server shutdown must not replace release worker');
   console.log('Release configuration passed: invalid endpoint rejected, synthetic hosted build/CSP/artifact audit verified without contacting any hosted endpoint.');
 } finally {
   assert.equal(run('npm run build',{...process.env,KAZICOACH_RELEASE_ACCOUNTS:'false'}).status,0,'Could not restore default private build');

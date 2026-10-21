@@ -25,6 +25,7 @@ export default defineConfig(({command})=>{
     react(),
     {
       name: "offline-public-shell",
+      apply: "build" as const,
       closeBundle() {
         const headers=Object.entries(securityHeaders(hosted?endpoint:null)).map(([name,value])=>`  ${name}: ${value}`).join('\n');
         writeFileSync('dist/_headers',`/*\n${headers}\n/index.html\n  Cache-Control: no-cache\n/sw.js\n  Cache-Control: no-cache\n/assets/*\n  Cache-Control: public, max-age=31536000, immutable\n`);
