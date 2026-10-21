@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.0.0 hosted staging checkpoint — 2026-10-21
+
+- Initialize the inspected empty launch Supabase project with seven reviewed migrations and exact-origin Auth configuration under the owner's autonomous release authorization.
+- Verify 12 real hosted authorization proofs, remove all temporary test identities, and restore actual hosted exports in a disposable local database; encrypt retained snapshots.
+- Deploy Cloudflare staging with billing/AI disabled; verify live CSP, assets, headers, service worker and fail-closed API behavior, plus rendered browser Settings and public moderation results.
+- Fix test/dev shutdown overwriting release headers/service-worker artifacts; add build isolation regression and validate against PostgreSQL 17.
+- Public account launch remains blocked by verified SMTP, real-owner account/MFA, current Samsung acceptance and operational recovery requirements. See `docs/DEPLOYMENT_CHECKPOINT_2026-10-21.md` for actual changes and evidence.
+
 ## 2.0.0 release hardening — 2026-10-21, unreleased
 - Remove bundled candidate/CV history and stale interview assertions while preserving private workspace data and question IDs.
 - Pin Vite 8.3.5; replace vulnerable DOCX dependency chain with bounded local ZIP/XML text extraction; current audit reports zero known findings.

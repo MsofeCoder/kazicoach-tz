@@ -1,5 +1,7 @@
 # Final pre-production checkpoint — 2026-10-19
 
+**Current verdict and actual hosted changes:** see [hosted deployment checkpoint — 2026-10-21](DEPLOYMENT_CHECKPOINT_2026-10-21.md). This document is historical. It must not be used to infer that hosted services remain untouched or that release authorization is still missing.
+
 **Superseded by [release readiness — 2026-10-21](RELEASE_READINESS_2026-10-21.md).** The older evidence and blockers below describe the earlier build. The current build has addressed local ports, dependency findings, public CV content, hosted configuration preparation and backend admin MFA. Production release still requires fresh phone/staging/operational evidence and explicit approval.
 
 **Decision: NO-GO for production deployment, billing enablement or merge. GO for continued isolated local acceptance and remediation.** This is an evidence-based engineering recommendation, not production authorization.

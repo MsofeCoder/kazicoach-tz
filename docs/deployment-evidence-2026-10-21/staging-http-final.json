@@ -1,0 +1,75 @@
+{
+  "checkedAt": "2026-10-21T15:12:32.676Z",
+  "base": "https://staging.kazicoach-tz-441.pages.dev",
+  "commit": "a459b54",
+  "results": [
+    {
+      "name": "staging index",
+      "status": "PASS",
+      "details": {
+        "status": 200
+      }
+    },
+    {
+      "name": "hosted CSP",
+      "status": "PASS",
+      "details": {
+        "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://qkyuqfqrixohcbdkchoo.supabase.co; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+      }
+    },
+    {
+      "name": "browser security headers",
+      "status": "PASS",
+      "details": {}
+    },
+    {
+      "name": "page references compiled assets",
+      "status": "PASS",
+      "details": {
+        "assets": [
+          "/assets/index-Dv7y3SoQ.js",
+          "/assets/supabase-DQxmrbwW.js",
+          "/assets/index-B8zkuoUc.css"
+        ]
+      }
+    },
+    {
+      "name": "asset /assets/index-Dv7y3SoQ.js",
+      "status": "PASS",
+      "details": {
+        "status": 200
+      }
+    },
+    {
+      "name": "asset /assets/supabase-DQxmrbwW.js",
+      "status": "PASS",
+      "details": {
+        "status": 200
+      }
+    },
+    {
+      "name": "asset /assets/index-B8zkuoUc.css",
+      "status": "PASS",
+      "details": {
+        "status": 200
+      }
+    },
+    {
+      "name": "service worker fresh",
+      "status": "PASS",
+      "details": {
+        "status": 200,
+        "cache": "no-cache"
+      }
+    },
+    {
+      "name": "unconfigured paid provider fails closed",
+      "status": "PASS",
+      "details": {
+        "status": 503,
+        "cache": "no-store",
+        "body": "{\"error\":\"AI generation is not configured.\"}"
+      }
+    }
+  ]
+}

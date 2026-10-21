@@ -1,5 +1,7 @@
 # Release readiness checkpoint — 2026-10-21
 
+**Historical local checkpoint.** The later [hosted deployment checkpoint](DEPLOYMENT_CHECKPOINT_2026-10-21.md) supersedes its target/status/authorization statements. Hosted migrations, authorization tests, export restoration and staging deployment have now been performed under the owner's autonomous release authorization. Public account launch still awaits verified SMTP, real-owner MFA and remaining acceptance/operations evidence.
+
 **Engineering hardening is locally verified. Production release remains NO-GO pending the operational and acceptance gates below.** This report is not deployment, billing, hosted connection or merge authorization.
 
 Work remains on `feature/kazicoach-v2`; master stays at `bba3502a6e822f715dcd16b3e90144a28aef2c71`. No hosted project was contacted, paid provider called, payment initiated, merge performed or deployment made.

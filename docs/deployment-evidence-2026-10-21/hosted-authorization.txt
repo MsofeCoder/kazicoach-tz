@@ -1,0 +1,18 @@
+{
+  "status": "PASS",
+  "proofs": [
+    "anonymous private reads denied",
+    "public ordered packages and approved contact",
+    "cross-user read/delete isolation",
+    "editable metadata does not grant admin or Plus",
+    "password-only trusted owner denied",
+    "real hosted MFA session accepted",
+    "old AAL1 bearer stays denied after MFA upgrade",
+    "manual seven-day activation and Basic/Plus boundary",
+    "immediate package switching preserves another user",
+    "revocation denies protected work while other grant works",
+    "moderation approval safe projection and withdrawal",
+    "administrative audit and owner deletion protection"
+  ]
+}
+Hosted synthetic identities removed. No real customer or owner account was created.

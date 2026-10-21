@@ -1,0 +1,2 @@
+PASS: actual hosted schema/data exports restored into an isolated local database; Auth empty, both packages/contact/migration history retained, all application RLS enabled and anonymous private reads denied.
+Disposable local restore database removed; original local/hosted databases preserved.

@@ -1,5 +1,7 @@
 # Rollback and migration review
 
+**Current hosted status:** the [deployment checkpoint](DEPLOYMENT_CHECKPOINT_2026-10-21.md) and [updated operational checklist](PRODUCTION_DEPLOYMENT_CHECKLIST.md) supersede earlier no-remote-change assertions below. Actual hosted exports were restored in an isolated local database and encrypted afterward. No prior production deployment exists in the new Pages project; do not promise production rollback to an earlier preview.
+
 **2026-10-21:** use only reviewed sanitized artifacts compatible with the additive schema. Earlier artifacts contain personal candidate content and lack MFA enforcement; they are not safe public rollback targets. Do not drop user tables, reset hosted data or remove MFA to recover a release. Test real backup restoration and deletion reconciliation on approved staging before production. Current local evidence: [readiness report](RELEASE_READINESS_2026-10-21.md).
 
 ## Application

@@ -1,5 +1,7 @@
 # Local preview and verification
 
+Hosted staging is now available at <https://staging.kazicoach-tz-441.pages.dev/>; see the [current deployment checkpoint](DEPLOYMENT_CHECKPOINT_2026-10-21.md). The local-only fixture instructions below remain local-only. Hosted SMTP and the real owner identity are not configured; do not reuse disposable local credentials there.
+
 **Current checkpoint:** [release readiness — 2026-10-21](RELEASE_READINESS_2026-10-21.md). Current API/DB/inbox ports are **57251/57252/57254**, superseding older port references below. Run `supabase migration up --local` before `npm run preview:setup`. Fixture tools validate the configured port and cannot accept a remote override.
 
 The local owner now requires MFA. Setup enrolls only the synthetic owner and stores its seed in ignored `.local-review/owner-mfa.json`. Sign in as that fixture, run `node scripts/local-owner-code.mjs` privately and enter its code in Settings → Owner security. Never record its seed, QR or code in reports/screenshots. The helper cannot authenticate a real/hosted owner. Real-owner enrollment and recovery require approved staging evidence.

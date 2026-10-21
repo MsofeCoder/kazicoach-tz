@@ -2,7 +2,7 @@
 
 Offline-first interview coaching with optional accounts, selected progress sync, Basic/Plus packages, achievements and moderated testimonials. Coaching is independent advice, not official recruitment guidance. The technical role pack is an example; use your own verified experience and current official vacancy notices.
 
-Current evidence and remaining release gates: [release readiness](docs/RELEASE_READINESS_2026-10-21.md). Work stays on `feature/kazicoach-v2`. Master, hosted Supabase, production and billing are unchanged. The v2 branch has no automatic deployment workflow.
+Current evidence and launch requirements: [hosted checkpoint](docs/DEPLOYMENT_CHECKPOINT_2026-10-21.md). [Staging preview](https://staging.kazicoach-tz-441.pages.dev/) is deployed and the inspected empty hosted Supabase project is initialized. Public account launch awaits verified SMTP, real-owner MFA and remaining acceptance/operations evidence. Work stays on `feature/kazicoach-v2`; master is unchanged and billing is disabled. The v2 branch has no automatic deployment workflow.
 
 Personal candidate/CV content is excluded from the public application bundle. Existing `kazicoach-tz:v1` browser data, materials, answers, custom cards and question IDs remain readable. Signing in uploads nothing automatically. Explicit summary sync excludes answers/documents and is available to registered Free accounts. Downloaded offline features and browser trial counts are advisory; paid backend calls enforce current trusted entitlements.
 
