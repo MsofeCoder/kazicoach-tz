@@ -1,5 +1,7 @@
 # Checkpoint — local v2 review
 
+**Onboarding update:** [guide checkpoint](onboarding-2026-10-21/CHECKPOINT.md). Five-step first-use/replay guide is deployed to staging as `f4d7be5` / `44deab20`; 79 unit tests and type/lint/build/smoke/artifact checks pass. Actual browser flow and deployed guide verified. [Owner setup steps](OWNER_SETUP_GUIDE.md) identify exactly where SMTP, account confirmation/recovery and personal MFA must be completed. No backend changes or new hosted fixtures were needed.
+
 **Latest hosted progress — 2026-10-21:** [deployment checkpoint](DEPLOYMENT_CHECKPOINT_2026-10-21.md). Under the owner's autonomous release authorization, seven migrations were applied to the inspected empty launch project, 12 hosted authorization proofs passed and actual exports were restored locally. Corrected Cloudflare staging is live with passing HTTP/rendered-browser checks. SMTP, real owner/MFA and remaining phone/operations evidence block public account launch. Master is unchanged and billing is disabled. Statements below describe historical local checkpoints.
 
 **Latest:** [release hardening — 2026-10-21](RELEASE_READINESS_2026-10-21.md): 72 unit tests, 13 database scenarios, local Auth/recovery integration and zero known dependency findings. Added MFA enforcement, hosted configuration preparation, privacy-safe public content and backup-restoration checks. Fresh physical-phone and hosted staging acceptance remain pending. Older results below are historical.

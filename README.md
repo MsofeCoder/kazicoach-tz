@@ -8,6 +8,8 @@ Personal candidate/CV content is excluded from the public application bundle. Ex
 
 ## Private preview
 
+New browsers receive a short optional guide. Reopen it anytime with **Show me around** in the menu/sidebar or Settings. [Owner setup instructions](docs/OWNER_SETUP_GUIDE.md) cover the remaining dashboard steps; [guide verification](docs/onboarding-2026-10-21/CHECKPOINT.md) records the current staging update.
+
 ```powershell
 npm ci
 npm run dev
