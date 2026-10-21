@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.0 guided introduction — 2026-10-21
+
+- Add a five-step first-use guide with keyboard-accessible controls, skip/replay and shortcuts to real workspace pages; reopen from the menu or Settings.
+- Preserve existing workspaces and account callbacks; store only a local dismissal marker, with no cloud collection or permission changes.
+- Provide a direct-link owner setup guide for SMTP, confirmation/recovery and personal MFA. Verify 79 unit tests, lint/types/build/smoke/artifact checks and actual browser interaction.
+
 ## 2.0.0 hosted staging checkpoint — 2026-10-21
 
 - Initialize the inspected empty launch Supabase project with seven reviewed migrations and exact-origin Auth configuration under the owner's autonomous release authorization.

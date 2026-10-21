@@ -825,3 +825,25 @@ textarea[readonly] { color: #46534f; background: #f6f8f5; }
 .package-card { display: flex; flex-direction: column; gap: 10px; }
 .package-card .button { margin-top: auto; padding: 10px 12px; min-height: 44px; text-align: center; }
 @media(max-width: 650px) { .package-grid { grid-template-columns: 1fr; } .account-form .button { width: 100%; } }
+/* Native modal keeps keyboard focus and background interaction inside the guide. */
+.welcome-guide { position: fixed; inset: 0; margin: auto; width: min(560px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); overflow: auto; padding: 0; border: 1px solid #dce7df; border-radius: 24px; color: #183c36; background: #fffefa; box-shadow: 0 24px 90px #062d3540; }
+.welcome-guide::backdrop { background: #062e38b8; }
+.guide-top { display: flex; align-items: center; justify-content: space-between; padding: 16px 22px; border-bottom: 1px solid #e2e9df; }
+.guide-top > span { display: flex; align-items: center; gap: 9px; font-size: 13px; font-weight: 700; }
+.guide-content { padding: 30px 28px 12px; }
+.guide-content h2 { font-size: clamp(25px, 5vw, 32px); line-height: 1.16; margin: 13px 0 18px; letter-spacing: -.7px; }
+.guide-content h2:focus { outline: none; }
+.guide-content > p { font-size: 16px; line-height: 1.65; }
+.guide-tip { display: flex; align-items: flex-start; gap: 12px; padding: 16px; margin: 24px 0; border-radius: 14px; background: #edf5ef; }
+.guide-tip svg { flex-shrink: 0; margin-top: 3px; }
+.guide-tip p { font-size: 14px; line-height: 1.6; margin: 0; }
+.guide-steps { display: flex; justify-content: center; gap: 8px; }
+.guide-steps button { width: 44px; height: 44px; border: 1px solid #cbdcd1; border-radius: 50%; color: #224d42; background: transparent; cursor: pointer; }
+.guide-steps button[aria-current="step"] { background: #07594c; border-color: #07594c; color: white; }
+.guide-content .guide-count { text-align: center; font-size: 12px; margin: 8px 0 0; color: #546c60; }
+.guide-footer { display: flex; gap: 12px; justify-content: space-between; padding: 18px 28px 22px; }
+.guide-footer .button { min-height: 44px; }
+.guide-page-link { display: block; background: none; border: 0; text-decoration: underline; color: #07594c; cursor: pointer; padding: 0 20px 24px; min-height: 44px; margin: 0 auto; font-weight: 600; }
+.guide-entry { margin-top: 8px; }
+.guide-settings { background: #f5f9f3; }
+@media (max-width: 420px) { .guide-content { padding: 24px 20px 10px; } .guide-footer { padding: 16px 20px 20px; } .welcome-guide { border-radius: 18px; } }

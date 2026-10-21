@@ -1,6 +1,6 @@
 import {
   BarChart3, BookOpenText, ChevronRight, Flame, FolderUp, Gauge, Home,
-  Menu, Mic2, Settings, ShieldCheck, Sparkles, Target, X,
+  Menu, Mic2, Settings, ShieldCheck, Sparkles, Target, X, Compass,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { candidate } from './data';
@@ -12,6 +12,8 @@ import Materials from './views/Materials';
 import Progress from './views/Progress';
 import SettingsView from './views/Settings';
 import {AccountRecovery} from './views/AccountRecovery';
+import WelcomeGuide from './views/WelcomeGuide';
+import { rememberGuide, shouldOfferGuide } from './lib/onboarding';
 
 const navigation: Array<{ id: View; label: string; sw: string; icon: typeof Home }> = [
   { id: 'dashboard', label: 'Today', sw: 'Leo', icon: Home },
@@ -33,7 +35,7 @@ function Brand({ compact = false }: { compact?: boolean }) {
   );
 }
 
-function Sidebar() {
+function Sidebar({ onGuide }: { onGuide: () => void }) {
   const { view, setView, state, startPractice } = useApp();
   const level = Math.floor(state.xp / 180) + 1;
   const levelProgress = state.xp % 180;
@@ -54,6 +56,8 @@ function Sidebar() {
           );
         })}
       </nav>
+
+      <button className="nav-item guide-entry" onClick={onGuide}><Compass size={19} /><span><strong>Show me around</strong><small>Your quick guide</small></span></button>
 
       <div className="level-card">
         <div className="level-icon"><Sparkles size={18} /></div>
@@ -83,7 +87,7 @@ function MobileHeader({ onMenu }: { onMenu: () => void }) {
   );
 }
 
-function MobileDrawer({ open, close }: { open: boolean; close: () => void }) {
+function MobileDrawer({ open, close, onGuide }: { open: boolean; close: () => void; onGuide: () => void }) {
   const { view, setView } = useApp();
   if (!open) return null;
   return (
@@ -96,6 +100,7 @@ function MobileDrawer({ open, close }: { open: boolean; close: () => void }) {
             return <button key={item.id} className={`nav-item ${view === item.id ? 'active' : ''}`} onClick={() => { setView(item.id); close(); }}><Icon size={19} /><span><strong>{item.label}</strong><small>{item.sw}</small></span></button>;
           })}
         </nav>
+        <button className="nav-item guide-entry" onClick={() => { close(); onGuide(); }}><Compass size={19} /><span><strong>Show me around</strong><small>Your quick guide</small></span></button>
       </aside>
     </div>
   );
@@ -131,8 +136,15 @@ function TopContext() {
 }
 
 export default function App() {
-  const { view, toast } = useApp();
+  const { view, toast, setView } = useApp();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [guideOpen, setGuideOpen] = useState(() => {
+    try { return shouldOfferGuide(window.localStorage, window.location.search); } catch { return false; }
+  });
+  const closeGuide = () => {
+    try { rememberGuide(window.localStorage); } catch { /* Private storage may be unavailable. */ }
+    setGuideOpen(false);
+  };
 
   useEffect(() => {
     const titles: Record<View, string> = { dashboard: 'Today', practice: 'Practice', materials: 'Materials', progress: 'Progress', settings: 'Settings' };
@@ -141,9 +153,9 @@ export default function App() {
 
   return (
     <div className="app-shell">
-      <Sidebar />
+      <Sidebar onGuide={() => setGuideOpen(true)} />
       <MobileHeader onMenu={() => setMenuOpen(true)} />
-      <MobileDrawer open={menuOpen} close={() => setMenuOpen(false)} />
+      <MobileDrawer open={menuOpen} close={() => setMenuOpen(false)} onGuide={() => setGuideOpen(true)} />
       <div className="app-main">
         <TopContext />
         <main className="page-stage">
@@ -152,10 +164,11 @@ export default function App() {
           {view === 'practice' && <Practice />}
           {view === 'materials' && <Materials />}
           {view === 'progress' && <Progress />}
-          {view === 'settings' && <SettingsView />}
+          {view === 'settings' && <SettingsView onGuide={() => setGuideOpen(true)} />}
         </main>
       </div>
       <BottomNav />
+      {guideOpen && <WelcomeGuide close={closeGuide} navigate={destination => { closeGuide(); setView(destination); }} />}
       {toast && <div className="toast" role="status"><BookOpenText size={17} /> {toast}</div>}
     </div>
   );

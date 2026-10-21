@@ -1,7 +1,7 @@
 import {
   Bell, Check, CloudCog, Download, ExternalLink, FileJson, Gauge, Globe2,
   HardDrive, Info, LockKeyhole, ShieldCheck, SlidersHorizontal, Trash2, Users,
-  Volume2,
+  Volume2, Compass,
 } from 'lucide-react';
 import { candidate } from '../data';
 import { useApp } from '../context';
@@ -10,7 +10,7 @@ import { selectPanelVoice, voiceDelivery, availableVoiceStyles, accessibleVoiceS
 import AccountPanel from './AccountPanel';
 import { useAccount } from '../accounts';
 
-export default function SettingsView() {
+export default function SettingsView({ onGuide }: { onGuide: () => void }) {
   const { state, setState, notify, setView } = useApp();
   const {premium}=useAccount();
   const voiceStyle=accessibleVoiceStyle(state.preferences.voiceStyle,premium);
@@ -49,6 +49,10 @@ export default function SettingsView() {
 
       <section className="settings-grid">
         <div className="settings-main">
+          <article className="panel settings-section guide-settings">
+            <div className="settings-heading"><span><Compass size={19} /></span><div><h2>A little guidance, anytime</h2><p>Get to know practice, materials, progress and your privacy choices.</p></div></div>
+            <button className="button secondary" onClick={onGuide}><Compass size={17} /> Show me around</button>
+          </article>
           <AccountPanel />
           <article className="panel settings-section">
             <div className="settings-heading"><span><SlidersHorizontal size={19} /></span><div><h2>Coaching preferences</h2><p>Choose how the practice room supports you.</p></div></div>
