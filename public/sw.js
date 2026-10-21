@@ -24,6 +24,8 @@ self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
   if (event.request.method !== 'GET' || url.origin !== self.location.origin) return;
   if (!url.pathname.startsWith(SCOPE)) return;
+  // Recovery/confirmation codes and arbitrary query URLs must never become cache keys.
+  if (url.search || url.hash) return;
   if (event.request.headers.has('authorization') || event.request.cache === 'no-store') return;
   const shell = ASSETS.includes(url.href);
   // Account APIs and unknown URLs never enter the shell cache.

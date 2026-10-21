@@ -2,26 +2,14 @@ import {
   ArrowRight, Award, BookOpenCheck, CalendarDays, CheckCircle2, ChevronRight,
   Clock3, Flame, MapPin, Mic2, PenLine, Radio, ShieldAlert, Sparkles, Trophy,
 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { candidate, categoryLabels, encouragements, oralQuestions } from '../data';
 import { useApp } from '../context';
 import { calculateReadiness } from '../lib/scoring';
 import type { QuestionCategory } from '../types';
 
-function useCountdown() {
-  const calculate = () => Math.max(0, new Date(candidate.interviewAt).getTime() - Date.now());
-  const [distance, setDistance] = useState(calculate);
-  useEffect(() => {
-    const timer = window.setInterval(() => setDistance(calculate()), 60_000);
-    return () => window.clearInterval(timer);
-  }, []);
-  const hours = Math.floor(distance / 3_600_000);
-  return { days: Math.floor(hours / 24), hours: hours % 24, passed: distance <= 0 };
-}
-
 export default function Dashboard() {
   const { state, startPractice, setView } = useApp();
-  const countdown = useCountdown();
   const readiness = calculateReadiness(state.attempts.map(item => item.score));
   const encouragement = encouragements[state.attempts.length % encouragements.length];
   const level = Math.floor(state.xp / 180) + 1;
@@ -44,11 +32,11 @@ export default function Dashboard() {
     <div className="page dashboard-page">
       <section className="welcome-row">
         <div>
-          <span className="eyebrow"><span className="live-dot" /> Monday focus · 24 August</span>
+          <span className="eyebrow"><span className="live-dot" /> Your private preparation</span>
           <h1>Habari, {candidate.shortName}.</h1>
           <p>{encouragement}</p>
         </div>
-        <div className="interview-chip"><CalendarDays size={17} /><span><small>Interview</small><strong>Wed, 26 Aug · 07:00</strong></span></div>
+        <div className="interview-chip"><CalendarDays size={17} /><span><small>Interview</small><strong>Check your official notice</strong></span></div>
       </section>
 
       <section className="hero-grid">
@@ -59,12 +47,10 @@ export default function Dashboard() {
             <p>{candidate.specialization} · {candidate.organization}</p>
             <div className="venue"><MapPin size={16} /> {candidate.venue}</div>
           </div>
-          <div className="countdown-box" aria-label={`${countdown.days} days and ${countdown.hours} hours to the interview`}>
-            {countdown.passed ? <><strong>Today</strong><span>Stay calm</span></> : <><div><strong>{String(countdown.days).padStart(2, '0')}</strong><span>Days</span></div><i>:</i><div><strong>{String(countdown.hours).padStart(2, '0')}</strong><span>Hours</span></div></>}
-          </div>
+          <div className="countdown-box"><strong>Practice</strong><span>At your pace</span></div>
           <div className="target-footer">
-            <span><ShieldAlert size={15} /> {candidate.vacancyCount} advertised posts · {candidate.scale}</span>
-            <span>Source checked <CheckCircle2 size={14} /></span>
+            <span><ShieldAlert size={15} /> Example role pack · verify current requirements</span>
+            <span>Coaching advice <CheckCircle2 size={14} /></span>
           </div>
         </div>
 

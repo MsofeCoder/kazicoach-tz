@@ -11,6 +11,7 @@ import Practice from './views/Practice';
 import Materials from './views/Materials';
 import Progress from './views/Progress';
 import SettingsView from './views/Settings';
+import {AccountRecovery} from './views/AccountRecovery';
 
 const navigation: Array<{ id: View; label: string; sw: string; icon: typeof Home }> = [
   { id: 'dashboard', label: 'Today', sw: 'Leo', icon: Home },
@@ -146,6 +147,7 @@ export default function App() {
       <div className="app-main">
         <TopContext />
         <main className="page-stage">
+          <AccountRecovery />
           {view === 'dashboard' && <Dashboard />}
           {view === 'practice' && <Practice />}
           {view === 'materials' && <Materials />}

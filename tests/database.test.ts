@@ -4,6 +4,8 @@ import { readFileSync, readdirSync } from "node:fs";
 
 // Fresh disposable PostgreSQL. No ports, connection strings, linked projects or secrets.
 const container = `kazicoach-rls-${process.pid}-${Date.now()}`;
+const adminSession="20000000-0000-4000-8000-000000000003";
+const adminFactor="30000000-0000-4000-8000-000000000003";
 const a = "10000000-0000-4000-8000-000000000001";
 const b = "10000000-0000-4000-8000-000000000002";
 const admin = "10000000-0000-4000-8000-000000000003";
@@ -16,7 +18,7 @@ function docker(args: string[], input?: string) {
 }
 function sql(query: string, user?: string, role = "authenticated") {
   const prefix = user
-    ? `set role ${role}; set request.jwt.claim.sub='${user}';`
+    ? `set role ${role}; set request.jwt.claim.sub='${user}'; set request.jwt.claims='${JSON.stringify(user===admin?{aal:'aal2',session_id:adminSession,amr:[{method:'totp',timestamp:Math.floor(Date.now()/1000)}]}:{aal:'aal1'})}';`
     : "";
   const result = docker(
     [
@@ -64,6 +66,9 @@ beforeAll(async () => {
   if (!ready) throw new Error("Local Postgres did not start");
   sql(`create role anon nologin; create role authenticated nologin;
     create schema auth; create table auth.users(id uuid primary key);
+    create table auth.sessions(id uuid primary key,user_id uuid references auth.users(id) on delete cascade, factor_id uuid,aal text,not_after timestamptz);
+    create table auth.mfa_factors(id uuid primary key,user_id uuid,status text);
+    create function auth.jwt() returns jsonb language sql stable as $$ select coalesce(nullif(current_setting('request.jwt.claims',true),''),'{}')::jsonb $$;
     create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;
     grant usage on schema auth to anon,authenticated;
     grant execute on function auth.uid() to anon,authenticated;
@@ -73,7 +78,9 @@ beforeAll(async () => {
     .sort()) {
     sql(readFileSync(`supabase/migrations/${file}`, "utf8"));
   }
-  sql(`insert into kc_private.admins values('${admin}');`);
+  sql(`insert into kc_private.admins values('${admin}');
+    insert into auth.mfa_factors values('${adminFactor}','${admin}','verified');
+    insert into auth.sessions values('${adminSession}','${admin}','${adminFactor}','aal2',null);`);
 }, 60_000);
 afterAll(() => {
   docker(["stop", container]);
@@ -190,6 +197,30 @@ describe.sequential(
         "strong_answers",
       );
     });
+    it('switches Plus to Basic immediately, preserves other users and audits revocation',()=>{
+      sql(`select public.kc_admin_action('activate','${b}','{"package_id":"plus"}');`,admin);
+      sql(`select public.kc_admin_action('activate','${a}','{"package_id":"basic"}');`,admin);
+      expect(sql("select public.kc_has_capability('practice'),public.kc_has_capability('advanced_analysis');",a)).toBe('t|f');
+      expect(()=>sql('select public.kc_advanced_progress();',a)).toThrow(/Premium Plus required/);
+      expect(sql("select public.kc_has_capability('advanced_analysis');",b)).toBe('t');
+      expect(sql(`select count(*) from public.kc_entitlements where user_id='${a}';`)).toBe('1');
+      expect(sql(`select details->>'package_id' from kc_private.audit where action='activate' and target='${a}' order by id desc limit 1;`)).toBe('basic');
+      sql(`select public.kc_admin_action('revoke','${a}','{}');`,admin);
+      expect(sql("select public.kc_has_capability('practice');",a)).toBe('f');
+      expect(()=>sql('select public.kc_consume_cloud_request();',a)).toThrow(/Premium access required/);
+      expect(sql(`select action from kc_private.audit where target='${a}' order by id desc limit 1;`)).toBe('revoke');
+      expect(sql("select public.kc_has_capability('practice');",b)).toBe('t');
+      sql(`select public.kc_admin_action('activate','${a}','{"package_id":"plus"}');`,admin);
+    });
+    it('uses database-clock exact expiry and denies future grants',()=>{
+      // One transaction fixes now() so the equality boundary is deterministic.
+      expect(sql(`begin; update public.kc_entitlements set starts_at=now()-interval '7 days',expires_at=now() where user_id='${a}';
+        set local role authenticated; set local request.jwt.claim.sub='${a}'; select public.kc_has_capability('practice'); rollback;`)).toBe('f');
+      sql(`update public.kc_entitlements set starts_at=now()+interval '1 day',expires_at=now()+interval '8 days' where user_id='${a}';`);
+      expect(sql("select public.kc_has_capability('practice');",a)).toBe('f');
+      expect(()=>sql('select public.kc_consume_cloud_request();',a)).toThrow(/Premium access required/);
+      sql(`select public.kc_admin_action('activate','${a}','{"package_id":"plus"}');`,admin);
+    });
     it('restricts contact updates to the admin and audits values atomically',()=>{
       expect(()=>sql("select public.kc_set_contact('255688010595');",a)).toThrow(/Forbidden/);
       expect(()=>sql("update public.kc_settings set whatsapp='255688010595';",a)).toThrow(/permission denied/);
@@ -272,6 +303,51 @@ describe.sequential(
       expect(
         sql("select count(*) from public.kc_public_testimonials();", b, "anon"),
       ).toBe("0");
+    });
+    it("requires fresh MFA and a live session for privileged owner operations", () => {
+      const denied=(claims:unknown)=> {
+        const prefix=`set request.jwt.claims='${JSON.stringify(claims)}';`;
+        expect(()=>sql(prefix+"select public.kc_admin_overview();",admin)).toThrow(/Forbidden/);
+        expect(()=>sql(prefix+"select public.kc_set_contact('255688010595');",admin)).toThrow(/Forbidden/);
+        expect(()=>sql(prefix+`select public.kc_admin_action('activate','${b}','{"package_id":"plus"}');`,admin)).toThrow(/Forbidden/);
+      };
+      denied({aal:'aal1'});
+      denied({aal:'aal2',session_id:adminSession,amr:[{method:'totp',timestamp:Math.floor(Date.now()/1000)-901}]});
+      denied({aal:'aal2',session_id:adminSession,amr:[{method:'totp',timestamp:Math.floor(Date.now()/1000)+3600}]});
+      denied({aal:'aal2',session_id:a,amr:[{method:'totp',timestamp:Math.floor(Date.now()/1000)}]});
+      sql(`update auth.sessions set not_after=now()-interval '1 second' where id='${adminSession}';`);
+      expect(()=>sql('select public.kc_admin_overview();',admin)).toThrow(/Forbidden/);
+      sql(`update auth.sessions set not_after=null where id='${adminSession}'; update auth.mfa_factors set status='unverified' where id='${adminFactor}';`);
+      expect(()=>sql('select public.kc_admin_overview();',admin)).toThrow(/Forbidden/);
+      sql(`update auth.mfa_factors set status='verified' where id='${adminFactor}';`);
+      expect(sql('select public.kc_is_admin();',admin)).toBe('t');
+      expect(sql("select public.kc_has_capability('sync');",b)).toBe('t');
+    });
+    it("pages admin records without truncation, duplicates or learner access",()=>{
+      sql("insert into auth.users select gen_random_uuid() from generate_series(1,205);");
+      const ids:string[]=[];let cursor:string|null=null;
+      do {
+        const page=JSON.parse(sql(`select public.kc_admin_page('users',${cursor?`'${cursor}'`:'null'});`,admin));
+        expect(page.rows.length).toBeLessThanOrEqual(100);
+        ids.push(...page.rows.map((row:{user_id:string})=>row.user_id));cursor=page.next_cursor;
+      } while(cursor);
+      expect(ids.length).toBe(208);expect(new Set(ids).size).toBe(208);
+      expect(()=>sql("select public.kc_admin_page('users',null);",b)).toThrow(/Forbidden/);
+      expect(()=>sql(`set request.jwt.claims='{"aal":"aal1"}'; select public.kc_admin_page('audit',null);`,admin)).toThrow(/Forbidden/);
+      sql(`delete from auth.users where id not in ('${a}','${b}','${admin}');`);
+    });
+    it("restores an isolated database backup with RLS, audit and MFA protections intact",()=>{
+      const dump=spawnSync('docker',['exec',container,'pg_dump','-U','postgres','--format=c','--dbname=postgres'],{maxBuffer:16*1024*1024});
+      expect(dump.status).toBe(0);expect(dump.stdout.length).toBeGreaterThan(1000);
+      expect(docker(['exec',container,'createdb','-U','postgres','restore_check']).status).toBe(0);
+      const restored=spawnSync('docker',['exec','-i',container,'pg_restore','-U','postgres','--exit-on-error','--dbname=restore_check'],{input:dump.stdout,maxBuffer:16*1024*1024});
+      expect(restored.status,restored.stderr.toString()).toBe(0);
+      const check=docker(['exec','-i',container,'psql','-U','postgres','-d','restore_check','-Atq','-v','ON_ERROR_STOP=1'],
+        `select count(*)>0 from kc_private.audit; set role authenticated; set request.jwt.claim.sub='${b}'; select count(*) from public.kc_profiles where user_id='${a}';`);
+      expect(check.status).toBe(0);expect(check.stdout.trim()).toBe('t\n0');
+      const denied=docker(['exec','-i',container,'psql','-U','postgres','-d','restore_check','-Atq','-v','ON_ERROR_STOP=1'],
+        `set role authenticated; set request.jwt.claim.sub='${admin}'; set request.jwt.claims='{"aal":"aal1"}'; select public.kc_admin_overview();`);
+      expect(denied.status).not.toBe(0);expect(denied.stderr).toContain('Forbidden');
     });
     it("deletes only the requesting account with cascade and prevents stale-token writes", () => {
       expect(() => sql("select public.kc_delete_account();", admin)).toThrow(

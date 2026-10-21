@@ -1,4 +1,7 @@
+import {canonicalHttpsOrigin,hostedEndpoint,publishableKey} from '../../src/lib/deployment';
 export interface AccessEnv {
+  ACCOUNTS_MODE?: string;
+  APP_ORIGIN?: string;
   LOCAL_ACCOUNTS_ENABLED?: string;
   SUPABASE_URL?: string;
   SUPABASE_PUBLISHABLE_KEY?: string;
@@ -14,10 +17,15 @@ export async function premiumAccess(
   } catch {
     return { status: 503, error: "Local account service is not configured." };
   }
-  if (
+  const hosted=env.ACCOUNTS_MODE==='hosted';
+  const validHosted=hosted && hostedEndpoint(env.SUPABASE_URL)===url.origin &&
+    publishableKey(env.SUPABASE_PUBLISHABLE_KEY) &&
+    canonicalHttpsOrigin(env.APP_ORIGIN)===new URL(request.url).origin;
+  if ((!hosted && (
     env.LOCAL_ACCOUNTS_ENABLED !== "true" ||
     !["localhost", "127.0.0.1"].includes(url.hostname) ||
-    url.protocol !== "http:" ||
+    url.protocol !== "http:")) || (hosted && !validHosted) ||
+    url.username || url.password || url.pathname!=='/' || url.search || url.hash ||
     !env.SUPABASE_PUBLISHABLE_KEY
   )
     return { status: 503, error: "Cloud coaching is disabled during review." };
@@ -40,10 +48,12 @@ export async function premiumAccess(
         },
         body: "{}",
         signal: AbortSignal.timeout(8000),
+        redirect: 'error',
       },
     );
     if (result.status === 401)
       return { status: 401, error: "Sign in again to use cloud coaching." };
+    if(result.status>=500) return {status:503,error:'Access could not be verified. Retry later.'};
     const body: unknown = await result.json().catch(() => null);
     if (result.ok && body === true) return null;
     return (body as { code?: string } | null)?.code === "P0001"

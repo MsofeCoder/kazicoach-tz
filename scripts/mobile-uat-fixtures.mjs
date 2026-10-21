@@ -1,12 +1,10 @@
-import {spawnSync} from 'node:child_process';
+import { localOwnerMfa } from './local-mfa.mjs';
+import { localStack } from './local-stack.mjs';
 import {mkdirSync,readFileSync,writeFileSync,unlinkSync} from 'node:fs';
 import {randomUUID} from 'node:crypto';
 import {createClient} from '@supabase/supabase-js';
 
-const result=process.platform==='win32'?spawnSync(process.env.ComSpec||'cmd.exe',['/d','/s','/c','supabase status --output json'],{encoding:'utf8'}):spawnSync('supabase',['status','--output','json'],{encoding:'utf8'});
-if(result.status!==0) throw new Error('Local Supabase must be running');
-const config=JSON.parse(result.stdout);
-if(config.API_URL!=='http://127.0.0.1:57421') throw new Error('This fixture helper permits only the isolated local test stack');
+const config = localStack();
 const make=()=>createClient(config.API_URL,config.PUBLISHABLE_KEY||config.ANON_KEY,{auth:{persistSession:false,autoRefreshToken:false}});
 const file='.local-review/mobile-uat.json';
 if(process.argv.includes('--cleanup')) {
@@ -24,6 +22,7 @@ if(process.argv.includes('--cleanup')) {
 } else {
   const owner=make();
   if((await owner.auth.signInWithPassword({email:'owner@kazicoach.test',password:'LocalReview123!'})).error) throw new Error('Local review administrator unavailable');
+  await localOwnerMfa(owner);
   const fixtures=[];
   for(const tier of ['basic','plus']) {
     const client=make(); const email=`uat-${tier}-${randomUUID()}@kazicoach.test`;

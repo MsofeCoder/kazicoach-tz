@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import {canonicalHttpsOrigin,hostedEndpoint,publishableKey} from './deployment';
 
 export function localCloudConfig(
   enabled: string | undefined,
@@ -35,7 +36,18 @@ export function localCloudConfig(
   }
 }
 
-const config = localCloudConfig(
+export function hostedCloudConfig(url: string | undefined,key: string | undefined,origin: string,expectedOrigin: string | undefined) {
+  const endpoint=hostedEndpoint(url);
+  return endpoint && publishableKey(key) && canonicalHttpsOrigin(expectedOrigin)===origin
+    ? {url:endpoint,key:key!}:null;
+}
+const hosted = import.meta.env.VITE_ACCOUNT_MODE === 'hosted';
+const config = hosted ? hostedCloudConfig(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+  typeof location === 'undefined' ? '' : location.origin,
+  import.meta.env.VITE_APP_ORIGIN,
+) : localCloudConfig(
   import.meta.env.VITE_LOCAL_ACCOUNTS,
   import.meta.env.VITE_SUPABASE_URL,
   import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
@@ -43,6 +55,6 @@ const config = localCloudConfig(
 );
 export const cloud = config
   ? createClient(config.url, config.key, {
-      auth: { storageKey: "kazicoach-local-auth", detectSessionInUrl: false },
+      auth: { storageKey: hosted ? "kazicoach-account-auth" : "kazicoach-local-auth", detectSessionInUrl: false, flowType:'pkce' },
     })
   : null;

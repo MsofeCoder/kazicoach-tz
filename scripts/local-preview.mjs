@@ -1,5 +1,7 @@
+import { localOwnerMfa } from './local-mfa.mjs';
+import { localStack } from './local-stack.mjs';
 import { spawnSync } from "node:child_process";
-import { existsSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { createClient } from "@supabase/supabase-js";
 
 // This script has no remote mode. Never print CLI status: it includes privileged local keys.
@@ -8,21 +10,7 @@ const branch = spawnSync("git", ["branch", "--show-current"], {
 }).stdout.trim();
 if (branch !== "feature/kazicoach-v2")
   throw new Error("Switch to feature/kazicoach-v2 first.");
-const result =
-  process.platform === "win32"
-    ? spawnSync(
-        process.env.ComSpec || "cmd.exe",
-        ["/d", "/s", "/c", "supabase status --output json"],
-        { encoding: "utf8" },
-      )
-    : spawnSync("supabase", ["status", "--output", "json"], {
-        encoding: "utf8",
-      });
-if (result.status !== 0)
-  throw new Error("Run supabase start in this repository first.");
-const settings = JSON.parse(result.stdout);
-if (settings.API_URL !== "http://127.0.0.1:57421")
-  throw new Error("Unexpected local API URL. Refusing to connect.");
+const settings = localStack();
 const key = settings.PUBLISHABLE_KEY || settings.ANON_KEY;
 const client = createClient(settings.API_URL, key, {
   auth: { persistSession: false, autoRefreshToken: false },
@@ -73,6 +61,7 @@ if (bootstrap.status !== 0)
 // Approved public business contact; never overwrite subsequent admin changes.
 const ownerLogin=await client.auth.signInWithPassword({email:'owner@kazicoach.test',password:'LocalReview123!'});
 if(ownerLogin.error) throw new Error('Cannot authenticate the local review administrator.');
+await localOwnerMfa(client);
 const contact=await client.from('kc_settings').select('whatsapp').single();
 if(contact.error) throw new Error('Cannot read local contact settings.');
 if(contact.data.whatsapp==='') {
@@ -80,7 +69,15 @@ if(contact.data.whatsapp==='') {
   if(configured.error) throw new Error('Could not configure the approved business contact through the audited admin RPC.');
 }
 await client.auth.signOut();
-if (!existsSync(".env.local"))
+if (existsSync('.env.local')) {
+  const existing=readFileSync('.env.local','utf8');
+  const existingUrl=existing.match(/^VITE_SUPABASE_URL=(.*)$/m)?.[1]?.trim();
+  if(existingUrl!==settings.API_URL) throw new Error('Existing local environment targets a different endpoint; review it explicitly before setup.');
+  // Local CLI publishable keys can rotate when the preserved stack restarts.
+  const updated=existing.replace(/^VITE_SUPABASE_PUBLISHABLE_KEY=.*$/m,`VITE_SUPABASE_PUBLISHABLE_KEY=${key}`);
+  if(updated===existing&&!existing.includes(`VITE_SUPABASE_PUBLISHABLE_KEY=${key}`)) throw new Error('Local publishable key setting is missing');
+  writeFileSync('.env.local',updated);
+} else
   writeFileSync(
     ".env.local",
     `# Generated for local review only; ignored by git.\nVITE_LOCAL_ACCOUNTS=true\nVITE_SUPABASE_URL=${settings.API_URL}\nVITE_SUPABASE_PUBLISHABLE_KEY=${key}\n`,
@@ -91,5 +88,5 @@ console.log(
 );
 console.log("Local-only demo password: LocalReview123!");
 console.log(
-  "Run npm run dev -- --host 127.0.0.1; open http://127.0.0.1:5173. Existing .env.local was preserved.",
+  "Run npm run dev; open http://127.0.0.1:5173. Existing local settings were preserved; the matching local public key was refreshed.",
 );

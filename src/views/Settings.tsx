@@ -23,7 +23,7 @@ export default function SettingsView() {
   const testVoice = () => {
     if (!('speechSynthesis' in window)) { notify('Read-aloud is not available in this browser.'); return; }
     window.speechSynthesis.cancel();
-    const speech = new SpeechSynthesisUtterance('Good morning, Nyunyusa. Please give us five clear points, then connect your answer to the inspector role.');
+    const speech = new SpeechSynthesisUtterance('Good morning. Please give us five clear points, then connect your answer to the inspector role.');
     const voice = selectPanelVoice(voiceStyle, 0);
     const delivery = voiceDelivery(voiceStyle, state.preferences.speechRate);
     if (voice) { speech.voice = voice; speech.lang = voice.lang; } else speech.lang = 'en-GB';
@@ -73,9 +73,9 @@ export default function SettingsView() {
         </div>
 
         <aside className="settings-side">
-          <article className="panel target-settings-card"><span className="eyebrow">Active plan</span><h2>{candidate.role}</h2><p>{candidate.organization}</p><div><span>Candidate</span><strong>{candidate.name}</strong></div><div><span>Interview</span><strong>26 Aug 2026 · 07:00</strong></div><div><span>Venue</span><strong>{candidate.venue}</strong></div><em><Check size={14} /> context.md is authoritative</em></article>
+          <article className="panel target-settings-card"><span className="eyebrow">Active plan</span><h2>{candidate.role}</h2><p>{candidate.organization}</p><div><span>Candidate</span><strong>{candidate.name}</strong></div><div><span>Interview</span><strong>Check your official notice</strong></div><div><span>Venue</span><strong>{candidate.venue}</strong></div><em><Check size={14} /> Practice context; verify official requirements</em></article>
 
-          <article className="panel trust-card"><span className="trust-icon"><LockKeyhole size={22} /></span><h2>Privacy in plain language</h2><ul><li>Files are read locally by default.</li><li>No raw audio is stored.</li><li>Progress stays in this browser.</li><li>AI sends text only after confirmation.</li></ul><button className="text-button" onClick={exportData}><Download size={15} /> Back up my progress</button></article>
+          <article className="panel trust-card"><span className="trust-icon"><LockKeyhole size={22} /></span><h2>Privacy in plain language</h2><ul><li>Files are read locally by default.</li><li>No raw audio is stored.</li><li>Private progress stays in this browser; selected summaries sync only with your consent.</li><li>AI sends text only after confirmation.</li></ul><button className="text-button" onClick={exportData}><Download size={15} /> Back up my progress</button></article>
 
           <article className="panel source-links"><span className="eyebrow">Official references</span><h2>Verify before interview day</h2><a href="https://portal.ajira.go.tz/auth/login" target="_blank" rel="noreferrer">Ajira Portal <ExternalLink size={14} /></a><a href="https://www.taec.go.tz/pages/functions-and-responsibilities" target="_blank" rel="noreferrer">TAEC functions <ExternalLink size={14} /></a><a href="https://ai.google.dev/gemini-api/docs/rate-limits" target="_blank" rel="noreferrer">Gemini rate limits <ExternalLink size={14} /></a></article>
         </aside>

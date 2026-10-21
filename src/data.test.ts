@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { memoryAids, oralQuestions, panelMemberForQuestion, panelMembers, writtenQuestions } from './data';
 
-describe('Nyunyusa role pack', () => {
+describe('Public coaching role pack', () => {
   it('ships the expanded oral and written banks with unique ids', () => {
     expect(oralQuestions.length).toBeGreaterThanOrEqual(33);
     expect(writtenQuestions.length).toBeGreaterThanOrEqual(15);

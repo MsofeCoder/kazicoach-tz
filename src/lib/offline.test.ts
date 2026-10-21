@@ -47,6 +47,11 @@ function worker() {
   return { callbacks, cache, caches, network, saved };
 }
 describe("offline shell privacy boundaries", () => {
+  it("never caches recovery codes or query-bearing navigation URLs",()=>{
+    const w=worker(); const respondWith=vi.fn();
+    w.callbacks.get('fetch')!({request:new Request('http://localhost/kazicoach-tz/?code=PRIVATE&kc_recovery=1'),respondWith});
+    expect(respondWith).not.toHaveBeenCalled();expect(w.cache.put).not.toHaveBeenCalled();
+  });
   it("precaches the complete public manifest and never deletes other applications’ caches", async () => {
     const w = worker();
     let work = Promise.resolve();

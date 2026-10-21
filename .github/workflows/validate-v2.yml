@@ -16,6 +16,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: npm audit --audit-level=moderate
       - run: npm test
       - name: Pull isolated authorization-test database
         run: docker pull postgres:16-alpine
@@ -24,5 +25,7 @@ jobs:
       - run: npm run lint
       - run: npm run lint:functions
       - run: npm run lint:eslint
+      - run: npm run test:release-config
       - run: npm run build
+      - run: npm run audit:release
       - run: npm run smoke

@@ -127,8 +127,8 @@ export default function Materials() {
       </section>
 
       <section className="material-summary-grid">
-        <article><span className="summary-icon"><FileText /></span><div><small>Candidate profile</small><strong>{candidate.name}</strong><span>{candidate.profileFacts.length} facts grounded in current CV</span></div><CheckCircle2 size={18} className="ok" /></article>
-        <article><span className="summary-icon blue"><ShieldCheck /></span><div><small>Active job brief</small><strong>{candidate.role}</strong><span>{candidate.organizationShort} · {candidate.vacancyCount} posts</span></div><CheckCircle2 size={18} className="ok" /></article>
+        <article><span className="summary-icon"><FileText /></span><div><small>Private preparation</small><strong>Your materials</strong><span>Your uploads stay on this device</span></div><CheckCircle2 size={18} className="ok" /></article>
+        <article><span className="summary-icon blue"><ShieldCheck /></span><div><small>Active job brief</small><strong>{candidate.role}</strong><span>{candidate.organizationShort} · example role context</span></div><CheckCircle2 size={18} className="ok" /></article>
         <article><span className="summary-icon gold"><Sparkles /></span><div><small>Practice bank</small><strong>{oralQuestions.length + state.customQuestions.length} oral questions</strong><span>{state.customQuestions.length} created from your materials</span></div><button className="text-button" onClick={() => startPractice('oral')}>Practise</button></article>
       </section>
 
@@ -150,7 +150,7 @@ export default function Materials() {
           <article className="panel sources-panel">
             <div className="panel-heading"><div><span className="eyebrow">Your library</span><h2>Preparation sources</h2></div><span className="count-chip">{state.materials.length + 4} sources</span></div>
             <div className="source-list">
-              <div className="material-row built-in"><span className="file-type"><FileText size={21} /></span><div><strong>Nyunyusa current candidate profile</strong><span>Grounded in uploaded 12-page application/CV</span></div><em>Verified source</em></div>
+              <div className="material-row built-in"><span className="file-type"><FileText size={21} /></span><div><strong>Your own preparation materials</strong><span>Upload your CV privately to prepare with your own experience</span></div><em>Private by default</em></div>
               <div className="material-row built-in"><span className="file-type blue"><ShieldCheck size={21} /></span><div><strong>TAEC Inspector II role brief</strong><span>context.md + official vacancy duties</span></div><em>Built in</em></div>
               <div className="material-row built-in"><span className="file-type"><FileText size={21} /></span><div><strong>Tanzania radiation regulation notes</strong><span>Atomic Energy Act, licensing, emergency and inspection topics</span></div><em>Built in</em></div>
               <div className="material-row built-in"><span className="file-type gold"><ScanText size={21} /></span><div><strong>Field interview research report</strong><span>Technical, instrumentation and scenario question guidance</span></div><em>Built in</em></div>

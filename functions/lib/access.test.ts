@@ -79,6 +79,20 @@ describe("trusted cloud coaching boundary", () => {
       )?.status,
     ).toBe(503);
   });
+  it.each(['http://user:pass@127.0.0.1:57421','http://127.0.0.1:57421/untrusted','http://127.0.0.1:57421/?redirect=remote'])('rejects non-canonical local authorization endpoint %s',async url=>{
+    const send=vi.fn();expect((await premiumAccess(request(),{...env,SUPABASE_URL:url},send))?.status).toBe(503);expect(send).not.toHaveBeenCalled();
+  });
+  it('does not follow authorization-service redirects and fails closed on upstream errors',async()=>{
+    const send=vi.fn<typeof fetch>().mockResolvedValue(new Response('true',{status:500}));
+    expect((await premiumAccess(request(),env,send))?.status).toBe(503);
+    expect(send.mock.calls[0][1]?.redirect).toBe('error');
+  });
+  it('never contacts the paid provider when the trusted backend denies access',async()=>{
+    const send=vi.fn<typeof fetch>().mockResolvedValue(new Response('{"code":"42501"}',{status:403}));vi.stubGlobal('fetch',send);
+    const result=await onRequestPost({request:request(),env:{...env,GEMINI_API_KEY:'fake-provider-key'}});
+    expect(result.status).toBe(403);expect(send).toHaveBeenCalledTimes(1);
+    expect(String(send.mock.calls[0][0])).toContain('/rest/v1/rpc/kc_consume_cloud_request');
+  });
   it("never calls AI when local account integration is disabled", async () => {
     const result = await onRequestPost({
       request: request(),

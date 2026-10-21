@@ -1,5 +1,8 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { cloud } from "../lib/cloud";
+import {AdminSecurity} from './AdminSecurity';
+import {RecoveryRequest} from './AccountRecovery';
+import {collectPages} from '../lib/export';
 import { useAccount } from "../accounts";
 import { summarizeProgress, queueKey, readQueue } from "../lib/sync";
 import { orderedPackages, whatsappUpgradeUrl, type Package } from "../lib/plans";
@@ -127,6 +130,7 @@ function PackageEditor({
 function Administration() {
   const { admin, packages, refresh,whatsapp } = useAccount();
   const [overview, setOverview] = useState<Overview | null>(null);
+  const [cursors,setCursors]=useState<Record<'users'|'testimonials'|'audit',string|null>>({users:null,testimonials:null,audit:null});
   const [target, setTarget] = useState("");
   const [plan, setPlan] = useState("basic");
   const [message, setMessage] = useState("");
@@ -135,9 +139,19 @@ function Administration() {
   if (!admin || !cloud) return null;
   const client = cloud;
   const load = async () => {
-    const { data, error } = await client.rpc("kc_admin_overview");
-    if (error) setMessage("Could not load administration.");
-    else setOverview(data);
+    const kinds=['users','testimonials','audit'] as const;
+    const pages=await Promise.all(kinds.map(kind=>client.rpc('kc_admin_page',{kind,after_key:null})));
+    if(pages.some(page=>page.error))setMessage('Could not load administration. Verify your authenticator and retry.');
+    else {
+      setOverview({users:pages[0].data.rows,testimonials:pages[1].data.rows,audit:pages[2].data.rows});
+      setCursors({users:pages[0].data.next_cursor,testimonials:pages[1].data.next_cursor,audit:pages[2].data.next_cursor});
+    }
+  };
+  const more=async(kind:'users'|'testimonials'|'audit')=>{
+    const {data,error}=await client.rpc('kc_admin_page',{kind,after_key:cursors[kind]});
+    if(error){setMessage('Page unavailable. Verify your authenticator and retry.');return;}
+    setOverview(current=>current?({...current,[kind]:[...current[kind],...data.rows]} as Overview):current);
+    setCursors(current=>({...current,[kind]:data.next_cursor}));
   };
   const run = async (action: string, id: string, payload: object) => {
     setMessage("Saving…");
@@ -148,7 +162,7 @@ function Administration() {
     });
     setMessage(
       error
-        ? "Action denied or invalid. No changes saved."
+        ? "Action denied or invalid. Verify your authenticator, check the input and retry."
         : "Saved and audited.",
     );
     if (!error) {
@@ -158,14 +172,15 @@ function Administration() {
   };
   return (
     <article className="panel settings-section account-section">
-      <h2>Super Admin · local review</h2>
+      <h2>Super Admin</h2>
       <p>
         Manual activation follows payment verification outside the app. Package
-        changes affect new activations; existing expiry dates stay fixed.
+        changes affect new activations; existing expiry dates stay fixed. Verify your authenticator before administrative actions. Use Load more to review additional records; account IDs can also be entered directly.
       </p>
       <button className="button secondary" onClick={() => void load()}>
         Load users, moderation and audit
       </button>
+      {(['users','testimonials','audit'] as const).map(kind=>cursors[kind]&&<button className="button secondary" key={kind} onClick={()=>void more(kind)}>Load more {kind}</button>)}
       <form
         className="account-form"
         onSubmit={(e) => {
@@ -298,6 +313,8 @@ function AccountPanelContent() {
   const [body, setBody] = useState("");
   const [consent, setConsent] = useState(false);
   const [publicItems, setPublicItems] = useState<Testimonial[] | null>(null);
+  const exportIdentity=useRef(session?.user.id??null);
+  useEffect(()=>{exportIdentity.current=session?.user.id??null;return()=>{exportIdentity.current=null;};},[session?.user.id]);
   const summary = summarizeProgress(rows);
   async function signOut() {
     setEmail(''); setPassword(''); disableSync();
@@ -310,22 +327,22 @@ function AccountPanelContent() {
     event.preventDefault();
     if (!cloud) return;
     setBusy(true);
-    setMessage("Connecting to local test accounts…");
+    setMessage("Connecting securely…");
     try {
       const result = signup
-        ? await cloud.auth.signUp({ email, password })
+        ? await cloud.auth.signUp({ email, password, options:{emailRedirectTo:new URL(`${location.pathname}?kc_auth=1`,location.origin).href} })
         : await cloud.auth.signInWithPassword({ email, password });
       setMessage(
         result.error
-          ? "Unable to sign in or register. Check your details and local service."
+          ? "Unable to sign in or register. Check your details and account service."
           : signup
-            ? "Account created. Check the local test inbox if confirmation is enabled."
+            ? "Check your email for confirmation if this account is eligible."
             : "Signed in. Sync remains your choice.",
       );
       setPassword("");
     } catch {
       setMessage(
-        "Local account service is unavailable. Private practice still works.",
+        "Account service is unavailable. Private practice still works.",
       );
     } finally {
       setBusy(false);
@@ -341,8 +358,7 @@ function AccountPanelContent() {
           "kc_entitlements",
           "kc_testimonials",
         ].map(async (table) => {
-          const all: unknown[] = [];
-          for (let offset = 0; ; offset += 500) {
+          return collectPages(async(offset,size)=>{
             const { data, error } = await cloud!
               .from(table)
               .select("*")
@@ -352,11 +368,10 @@ function AccountPanelContent() {
                   ? "id"
                   : "user_id",
               )
-              .range(offset, offset + 499);
+              .range(offset, offset + size - 1);
             if (error) throw error;
-            all.push(...data);
-            if (data.length < 500) return all;
-          }
+            return data;
+          },()=>exportIdentity.current===session.user.id);
         }),
       );
       const current=await cloud.auth.getSession();
@@ -382,7 +397,7 @@ function AccountPanelContent() {
       !cloud ||
       !session ||
       !window.confirm(
-        "Permanently delete this local test account and its cloud progress, profile, entitlement and testimonial? Your private workspace stays in this browser.",
+        "Permanently delete this account and its cloud progress, profile, entitlement and testimonial? Your private workspace stays in this browser.",
       )
     )
       return;
@@ -424,8 +439,8 @@ function AccountPanelContent() {
         <h2>Optional account &amp; selected progress</h2>
         {!cloud ? (
           <p>
-            Private mode is active. Accounts are available only with an
-            explicitly configured local Supabase test service. No hosted service
+            Private mode is active. Accounts require an
+            explicitly configured account service. No account service
             is connected.
           </p>
         ) : !session ? (
@@ -457,7 +472,7 @@ function AccountPanelContent() {
               />
             </label>
             <button className="button primary" disabled={busy}>
-              Sign in locally
+              Sign in
             </button>
             <button
               type="button"
@@ -465,7 +480,7 @@ function AccountPanelContent() {
               disabled={busy || !email || password.length < 8}
               onClick={(e) => void authenticate(e, true)}
             >
-              Create local test account
+              Create account
             </button>
           </form>
         ) : (
@@ -522,7 +537,7 @@ function AccountPanelContent() {
                 className="button danger"
                 onClick={() => void deleteAccount()}
               >
-                Delete test account
+                Delete account
               </button>
             </div>
             <p role="status">{status}</p>
@@ -653,7 +668,9 @@ function AccountPanelContent() {
           {message}
         </p>
       </article>
+      {!session&&<RecoveryRequest/>}
       <Plans />
+      <AdminSecurity />
       <Administration />
     </>
   );

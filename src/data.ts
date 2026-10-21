@@ -1,23 +1,18 @@
 import type { OralQuestion, QuestionCategory, WrittenQuestion } from './types';
 
+// Public coaching context only. A learner's uploaded profile remains browser-private.
 export const candidate = {
-  name: 'Nyunyusa Twaha Mrisho',
-  shortName: 'Nyunyusa',
+  name: 'Your private workspace',
+  shortName: 'learner',
   role: 'Radiation Safety Inspector II',
-  specialization: 'Nuclear Physics',
+  specialization: 'Example technical role pack',
   organization: 'Tanzania Atomic Energy Commission',
   organizationShort: 'TAEC',
-  venue: 'PSRS Offices, Dodoma',
-  interviewAt: '2026-08-26T07:00:00+03:00',
-  vacancyCount: 4,
-  scale: 'PGSS 7',
-  profileFacts: [
-    { label: 'BSc in Physics, 2019–2024', detail: 'University of Dodoma', status: 'CV' },
-    { label: 'Physics Teacher, 2024–present', detail: 'Don Bosco Secondary School', status: 'CV' },
-    { label: 'Medical Physics & Radiation Sciences', detail: 'Professional specialization', status: 'CV' },
-    { label: 'Clinical field attachment', detail: 'Bugando Medical Centre', status: 'CV' },
-    { label: 'LINAC effective-dose research', detail: 'Ocean Road Cancer Institute', status: 'CV' },
-  ],
+  venue: 'Check the current official interview notice',
+  interviewAt: '',
+  vacancyCount: 0,
+  scale: 'Verify the current vacancy notice',
+  profileFacts: [] as {label: string; detail: string; status: string}[],
 };
 
 export const panelMembers = [
@@ -49,7 +44,7 @@ export const categoryLabels = {
 } as const;
 
 export const memoryAids: Record<string, { code: string; phrase: string; points: string[] }> = {
-  'oral-01': { code: 'SEAT+', phrase: 'Skills · Experience · Achievement · Type · TAEC value', points: ['State your BSc Physics and radiation-science foundation.', 'Mention current Physics teaching and clear communication.', 'Use Bugando exposure and ORCI LINAC research as evidence.', 'Name inspector-ready qualities: analytical, disciplined and honest.', 'Finish with how you will help TAEC protect people and the environment.'] },
+  'oral-01': { code: 'SEAT+', phrase: 'Skills · Experience · Achievement · Type · Role value', points: ['State only your actual qualifications.', 'Describe relevant skills with evidence.', 'Choose a real experience you can explain.', 'Connect your strengths to the advertised duties.', 'Explain how you would contribute to public service.'] },
   'oral-05': { code: 'LICAR', phrase: 'Licence · Inspect · Correct · Assess · Report', points: ['Conduct inspection and licensing work.', 'Plan risk-informed regulatory inspections.', 'Follow up corrective and remedial actions.', 'Perform surveillance plus QC/QA assessment.', 'Report findings, maintain violation records and coordinate zones.'] },
   'oral-07': { code: 'PEARF', phrase: 'Prepare · Enter · Assess · Report · Follow up', points: ['Prepare scope, licence history, risks and instruments.', 'Enter professionally: identify yourself and hold an opening meeting.', 'Assess documents, people, premises and measurements objectively.', 'Report and explain evidence-based findings at close-out.', 'Follow up until corrective actions are verified.'] },
   'oral-08': { code: 'P-SAFE', phrase: 'Practice · Source · Ability · Facility · Emergency', points: ['Identify the applicant, proposed practice and purpose.', 'Record source/equipment specifications and inventory.', 'Confirm qualified staff and a radiation protection programme.', 'Assess premises, shielding, calibration and QC/QA arrangements.', 'Verify emergency, security, waste and exposure-control plans.'] },
@@ -72,7 +67,7 @@ export const memoryAids: Record<string, { code: string; phrase: string; points: 
   'oral-30': { code: 'DOCES', phrase: 'Documents · Operators · Controls · Equipment · Survey', points: ['Review authorization, programme, inventory and records.', 'Confirm qualified operators, training and monitoring.', 'Inspect shielding, signs, access, indicators and local rules.', 'Check equipment condition and applicable QC tests.', 'Survey safely, report findings and schedule follow-up.'] },
   'oral-31': { code: 'SIN-CER', phrase: 'Stop · Isolate · Notify · Clean · Evaluate · Report', points: ['Stop work and isolate the spill area.', 'Assess radionuclide, activity, people and spread.', 'Notify the RSO, management and TAEC as required.', 'Decontaminate people gently under the approved plan.', 'Resurvey, package waste, document and investigate.'] },
   'oral-32': { code: 'HALF', phrase: 'Halves · Activity · Logs · Fallout/decay · Fixed', points: ['Define the time for activity to reduce by half.', 'Give the 50 percent then 25 percent example.', 'Use it when checking current source activity and records.', 'Apply it to authorized decay storage and waste decisions.', 'Remember it is a fixed nuclear property of the radionuclide.'] },
-  'oral-33': { code: 'STAR-I', phrase: 'Situation · Task · Action · Result/lesson · Inspector link', points: ['Name the ORCI LINAC dose-accuracy research context.', 'State the objective without inventing a result.', 'Explain your measurement, checking or analysis approach.', 'Give the safety, QA and teamwork lesson.', 'Link the lesson to calibrated, evidence-based inspection.'] },
+  'oral-33': { code: 'STAR-I', phrase: 'Situation · Task · Action · Result/lesson · Inspector link', points: ['Choose a real project or learning experience.', 'State its objective without inventing a result.', 'Explain your own contribution and method.', 'Describe the lesson and acknowledge limitations.', 'Connect the lesson to evidence-based inspection.'] },
 };
 
 export const oralQuestions: OralQuestion[] = [
@@ -80,19 +75,19 @@ export const oralQuestions: OralQuestion[] = [
     id: 'oral-01', category: 'personal', difficulty: 'Core', timeLimit: 90,
     question: 'Tell us about yourself and why your background fits the Radiation Safety Inspector II role.',
     swHint: 'Anza na elimu, ushahidi wa uzoefu, ujuzi unaohamishika, halafu malizia na thamani utakayoleta TAEC.',
-    modelAnswer: 'My name is Nyunyusa Twaha Mrisho. I hold a Bachelor of Science in Physics from the University of Dodoma, with specialization in Medical Physics and Radiation Sciences. I currently teach Physics at Don Bosco Secondary School, which has strengthened my discipline and ability to explain technical requirements clearly. My field attachment at Bugando Medical Centre and my LINAC effective-dose accuracy research at Ocean Road Cancer Institute deepened my respect for radiation safety, measurement, quality assurance and evidence. These experiences fit inspection work because an inspector must understand the science, observe carefully, document facts and communicate corrective requirements professionally. I now want to use that foundation in public service to help TAEC protect workers, patients, the public and the environment.',
-    keyPoints: ['Physics/radiation degree', 'current teaching and communication', 'Bugando and ORCI evidence', 'inspection-relevant skills', 'public protection'],
-    keywords: [['physics', 'medical physics', 'radiation sciences'], ['teaching', 'teacher', 'don bosco', 'communication'], ['bugando', 'ocean road', 'orci', 'linac', 'field attachment'], ['inspect', 'evidence', 'document'], ['workers', 'patients', 'public', 'environment']],
-    source: 'Candidate sample + TAEC role pack', followUp: 'What is the strongest skill you would bring in your first six months?'
+    modelAnswer: 'Use this structure with your own facts: introduce your relevant qualification, describe one genuine experience, and explain the skills it demonstrates. Give a specific example of checking evidence, communicating a difficult idea, or documenting work. Connect those skills to the current advertised duties and public safety. State where you need further training. Do not claim qualifications, employers, projects or results that are not yours.',
+    keyPoints: ['actual qualifications', 'relevant skills', 'real experience', 'inspection-relevant evidence', 'public service'],
+    keywords: [['qualification', 'degree', 'training'], ['skill', 'communication', 'analysis'], ['experience', 'project', 'example'], ['inspect', 'evidence', 'document'], ['public', 'service', 'safety']],
+    source: 'Coaching template — replace with your own verified facts'
   },
   {
     id: 'oral-02', category: 'personal', difficulty: 'Core', timeLimit: 75,
-    question: 'You have worked as a Physics teacher. Why do you now want to become a radiation safety inspector?',
+    question: 'How do your current experience and skills prepare you for this inspector role?',
     swHint: 'Usidharau ualimu. Uonyeshe kuwa ni msingi wa mawasiliano, uwajibikaji na kujifunza kwa makini.',
-    modelAnswer: 'Teaching has been valuable preparation, not a detour. It kept my Physics fundamentals active and trained me to communicate difficult ideas to people with different levels of knowledge. Regulatory inspection needs the same clarity when explaining a finding, a safety requirement, or a corrective action to a licensee. I am now ready to apply my degree more directly to radiation protection. The inspector role combines technical analysis, field observation, impartial decision-making, and public service. That combination matches both my training and my motivation. I would enter the role ready to learn TAEC procedures under supervision, prepare accurate reports, and contribute to consistent compliance across facilities.',
-    keyPoints: ['Teaching as an asset', 'transferable communication', 'radiation protection motivation', 'public service', 'readiness to learn'],
-    keywords: [['teaching', 'teacher'], ['communicat', 'explain'], ['radiation protection', 'safety'], ['public service', 'protect the public'], ['learn', 'supervision', 'procedure']],
-    source: 'Candidate sample + coaching synthesis'
+    modelAnswer: 'Choose an example from your own work, study or volunteering. Explain the task, your contribution, and what you learned about analysis, communication or responsibility. Connect that evidence to inspection, accurate records and impartial decisions. Describe the training or supervision you would need. This is a coaching structure, not a statement of your employment history.',
+    keyPoints: ['real experience', 'transferable skills', 'inspection link', 'public service', 'learning plan'],
+    keywords: [['experience', 'work', 'study'], ['analysis', 'communication', 'responsibility'], ['inspect', 'records', 'impartial'], ['public', 'service'], ['learn', 'train', 'supervision']],
+    source: 'Coaching template — replace with your own verified facts'
   },
   {
     id: 'oral-03', category: 'personal', difficulty: 'Core', timeLimit: 75,
@@ -107,10 +102,10 @@ export const oralQuestions: OralQuestion[] = [
     id: 'oral-04', category: 'personal', difficulty: 'Foundation', timeLimit: 75,
     question: 'What are your main strengths, and what professional area are you actively improving?',
     swHint: 'Taja nguvu 2–3 zenye ushahidi. Udhaifu uwe wa kweli lakini uonyeshe mpango wa kuuboresha.',
-    modelAnswer: 'My first strength is analytical discipline: Physics trained me to check assumptions, units, measurements, and conclusions before reporting. My second is communication: teaching helped me explain technical ideas clearly and listen for misunderstanding. My third is documentation and preparation, which are essential for defensible inspection reports. One area I am actively improving is the depth of my direct regulatory field experience. I would address it through TAEC induction, studying inspection procedures and applicable regulations, observing experienced inspectors, using approved checklists, and asking for review of my early reports. I will never hide a knowledge gap; I will seek guidance while remaining accountable for learning quickly.',
-    keyPoints: ['Relevant strengths', 'evidence', 'honest development area', 'specific improvement plan', 'safe humility'],
-    keywords: [['analytical', 'detail', 'check'], ['communication', 'teaching'], ['document', 'report'], ['field experience', 'regulatory experience'], ['training', 'mentor', 'guidance', 'learn']],
-    source: 'Candidate sample + coaching synthesis'
+    modelAnswer: 'Choose strengths you can support with real examples: checking assumptions and measurements, explaining findings clearly, or keeping complete records. Describe one genuine development area and a practical learning plan, such as studying procedures, seeking supervision and requesting feedback. Avoid claiming a qualification or field experience you do not have. An honest answer explains both your contribution and the boundaries of your competence.',
+    keyPoints: ['evidenced strengths', 'clear communication', 'complete records', 'honest development area', 'learning plan'],
+    keywords: [['evidence', 'measurement', 'check'], ['communication', 'explain'], ['record', 'document'], ['development', 'gap', 'competence'], ['training', 'mentor', 'guidance', 'learn']],
+    source: 'Coaching template — replace with your own verified facts'
   },
   {
     id: 'oral-05', category: 'role', difficulty: 'Core', timeLimit: 120,
@@ -366,23 +361,23 @@ export const oralQuestions: OralQuestion[] = [
   },
   {
     id: 'oral-33', category: 'personal', difficulty: 'Core', timeLimit: 105,
-    question: 'Tell the panel about your LINAC effective-dose research at Ocean Road Cancer Institute and what it taught you for inspection work.',
+    question: 'Describe a real project or learning experience and what it taught you for inspection work.',
     swHint: 'Use STAR, but do not invent results. State objective, your method/role, safety lesson and inspector connection.',
-    modelAnswer: 'During my Physics degree, I worked on an assessment of the accuracy of effective dose received by patients from a linear accelerator at Ocean Road Cancer Institute. The objective was to compare prescribed and measured dose information against dosimetry expectations and understand how accuracy supports patient safety. The work strengthened my appreciation for careful measurement, correct units, equipment quality assurance, complete records and checking a result before accepting it. It also showed me the value of working with qualified clinical professionals and staying within my competence. For this inspector role, I would apply the same habits: use suitable calibrated instruments, follow an approved method, record objective evidence, investigate unusual results and communicate findings clearly without inventing conclusions.',
-    keyPoints: ['ORCI LINAC research', 'dose-accuracy objective', 'measurement and QA lesson', 'work within competence', 'inspection transfer'],
-    keywords: [['ocean road', 'orci', 'linac'], ['effective dose', 'accuracy', 'prescribed', 'measured'], ['measurement', 'quality assurance', 'qa', 'records', 'units'], ['qualified', 'competence', 'professional'], ['calibrated', 'evidence', 'investigate', 'finding']],
-    source: 'Current uploaded CV · candidate-specific'
+    modelAnswer: 'Choose a project you actually completed. Explain the situation and objective, your own contribution, the method used to check the work, and the result or lesson. Acknowledge uncertainty and do not invent measurements or outcomes. Connect the experience to suitable instruments, approved methods, objective evidence, complete records, teamwork and professional communication. If you have no relevant project, explain a genuine learning exercise and what further practical training you need.',
+    keyPoints: ['real project context', 'clear objective', 'method and evidence', 'competence and limitations', 'inspection transfer'],
+    keywords: [['project', 'learning', 'experience'], ['objective', 'task', 'purpose'], ['method', 'evidence', 'measurement', 'records'], ['competence', 'limitation', 'qualified'], ['inspection', 'calibrated', 'finding', 'safety']],
+    source: 'Coaching template — replace with your own verified facts'
   }
 ];
 
 export const writtenQuestions: WrittenQuestion[] = [
   {
     id: 'written-01', category: 'role',
-    question: 'Which statement best describes TAEC’s regulatory function?',
+    question: 'Describe a real project or learning experience and what it taught you for inspection work.',
     options: ['It operates every radiation facility in Tanzania', 'It authorizes and inspects practices and can require corrective action', 'It only trains radiation workers', 'It only advises private hospitals'],
     correctIndex: 1,
     explanation: 'TAEC’s regulatory role includes authorization through registration/licensing, safety review, inspection, enforcement, and follow-up. Primary responsibility for safe operation remains with the licensee.',
-    source: 'TAEC official functions'
+    source: 'Coaching template — replace with your own verified facts'
   },
   {
     id: 'written-02', category: 'technical',

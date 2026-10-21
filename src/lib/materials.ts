@@ -32,16 +32,15 @@ export async function extractMaterial(file: File): Promise<Material> {
   if (lower.endsWith('.txt') || lower.endsWith('.md') || file.type.startsWith('text/')) {
     extractedText = await file.text();
   } else if (lower.endsWith('.docx')) {
-    const mammoth = await import('mammoth/mammoth.browser');
+    const { extractDocxText } = await import('./docx');
     const arrayBuffer = await file.arrayBuffer();
-    const result = await mammoth.extractRawText({ arrayBuffer });
-    extractedText = result.value;
+    extractedText = extractDocxText(new Uint8Array(arrayBuffer));
   } else if (lower.endsWith('.pdf')) {
     const pdfjs = await import('pdfjs-dist');
     const workerSrc = (await import('pdfjs-dist/build/pdf.worker.mjs?url')).default;
     pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
     const data = new Uint8Array(await file.arrayBuffer());
-    const document = await pdfjs.getDocument({ data }).promise;
+    const document = await pdfjs.getDocument({ data, isEvalSupported:false, useSystemFonts:false, disableFontFace:true }).promise;
     const pages: string[] = [];
     for (let index = 1; index <= Math.min(document.numPages, 80); index += 1) {
       const page = await document.getPage(index);

@@ -1,25 +1,9 @@
+import { localOwnerMfa } from './local-mfa.mjs';
+import { localStack } from './local-stack.mjs';
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { createClient } from "@supabase/supabase-js";
-const result =
-  process.platform === "win32"
-    ? spawnSync(
-        process.env.ComSpec || "cmd.exe",
-        ["/d", "/s", "/c", "supabase status --output json"],
-        { encoding: "utf8" },
-      )
-    : spawnSync("supabase", ["status", "--output", "json"], {
-        encoding: "utf8",
-      });
-if (result.status !== 0)
-  throw new Error("Start the repository local Supabase stack first.");
-const config = JSON.parse(result.stdout);
-assert.equal(
-  config.API_URL,
-  "http://127.0.0.1:57421",
-  "Only the isolated local stack is allowed",
-);
+const config = localStack();
 const make = () =>
   createClient(config.API_URL, config.PUBLISHABLE_KEY || config.ANON_KEY, {
     auth: { persistSession: false, autoRefreshToken: false },
@@ -36,6 +20,11 @@ for (const [client, name] of [[owner, "owner"]]) {
   });
   assert.equal(error, null, "Run npm run preview:setup first");
 }
+assert.equal((await owner.rpc('kc_is_admin')).data,true,'Local owner role missing');
+assert.ok((await owner.rpc('kc_admin_overview')).error,'Password-only owner must not read admin overview');
+assert.ok((await owner.rpc('kc_set_contact',{phone:'255688010595'})).error,'Password-only owner must not change settings');
+await localOwnerMfa(owner);
+assert.equal((await owner.rpc('kc_admin_overview')).error,null,'Verified owner MFA should unlock admin overview');
 // Do not reuse the review learners: owner UAT may have profiles/testimonials there.
 for(const [client,label] of [[a,'a'],[b,'b']]) {
   const created=await client.auth.signUp({email:`integration-${label}-${randomUUID()}@kazicoach.test`,password:'LocalReview123!'});
@@ -132,6 +121,16 @@ try {
     null,
   );
   assert.ok(Array.isArray((await a.rpc("kc_advanced_progress")).data));
+  // Downgrades replace the same row and remove Plus rights immediately.
+  assert.equal((await owner.rpc('kc_admin_action',{action:'activate',target:aid,payload:{package_id:'basic'}})).error,null);
+  assert.ok((await a.rpc('kc_advanced_progress')).error);
+  assert.equal((await a.rpc('kc_has_capability',{capability:'practice'})).data,true);
+  assert.equal((await a.from('kc_entitlements').select('*')).data.length,1);
+  assert.deepEqual((await b.from('kc_entitlements').select('*')).data,[]);
+  assert.equal((await owner.rpc('kc_admin_action',{action:'revoke',target:aid,payload:{}})).error,null);
+  assert.equal((await a.rpc('kc_has_capability',{capability:'practice'})).data,false);
+  assert.ok((await a.rpc('kc_consume_cloud_request')).error);
+  assert.equal((await owner.rpc('kc_admin_action',{action:'activate',target:aid,payload:{package_id:'plus'}})).error,null);
   const submitted = await a
     .from("kc_testimonials")
     .insert({

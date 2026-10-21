@@ -16,7 +16,7 @@ try {
   const assets = JSON.parse(
     sw.split("\n")[0].replace("self.__KC_ASSETS = ", "").replace(/;$/, ""),
   );
-  assert.ok(assets.some((path) => path.includes("mammoth")));
+  assert.ok(assets.some((path) => path.includes("docx")));
   assert.ok(assets.some((path) => path.includes("pdf.worker")));
   for (const asset of assets) {
     const downloaded=await fetch(`${base}/${asset}`);
