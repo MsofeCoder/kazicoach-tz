@@ -1,0 +1,5 @@
+
+> kazicoach-tz@0.1.0 test:local
+> node scripts/test-local-api.mjs
+
+Local Auth + PostgREST passed: two-user isolation, anonymous denial, duplicate sync, Basic/Plus boundaries, moderation, withdrawal, cascading deletion and stale-token denial.

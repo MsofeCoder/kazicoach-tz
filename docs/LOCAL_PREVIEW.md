@@ -1,5 +1,13 @@
 # Local preview and verification
 
+**Current checkpoint:** [release readiness — 2026-10-21](RELEASE_READINESS_2026-10-21.md). Current API/DB/inbox ports are **57251/57252/57254**, superseding older port references below. Run `supabase migration up --local` before `npm run preview:setup`. Fixture tools validate the configured port and cannot accept a remote override.
+
+The local owner now requires MFA. Setup enrolls only the synthetic owner and stores its seed in ignored `.local-review/owner-mfa.json`. Sign in as that fixture, run `node scripts/local-owner-code.mjs` privately and enter its code in Settings → Owner security. Never record its seed, QR or code in reports/screenshots. The helper cannot authenticate a real/hosted owner. Real-owner enrollment and recovery require approved staging evidence.
+
+On an authorized Samsung ADB connection, reverse 5173 and the configured API port (currently 57251). Wireless debugging must already be authorized by the owner; do not invent an address. Use the [OpenCode UAT prompt](OPEN_CODE_RELEASE_UAT_PROMPT.md) against local services only.
+
+## Earlier review instructions (port/MFA updates above take precedence)
+
 Latest correction: setup fills a blank local contact setting with the approved `+255688010595` through the audited admin RPC and preserves subsequent changes. Each package button opens WhatsApp with package/price/duration only. See [CORRECTIVE_CHECKPOINT.md](CORRECTIVE_CHECKPOINT.md) for current validation and pending mobile steps.
 
 Requires Node 22.19+ (CI uses Node 22), Docker Desktop and Supabase CLI 2.121.0. No hosted project, payment gateway or paid AI is required.

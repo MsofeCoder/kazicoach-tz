@@ -1,83 +1,52 @@
-# KaziCoach TZ
+# KaziCoach TZ 2.0
 
-## Version 2 local review
+Offline-first interview coaching with optional accounts, selected progress sync, Basic/Plus packages, achievements and moderated testimonials. Coaching is independent advice, not official recruitment guidance. The technical role pack is an example; use your own verified experience and current official vacancy notices.
 
-Work is on `feature/kazicoach-v2`. Master and hosted services are unchanged. Optional local accounts, selected-summary sync, Basic/Plus packages, manual Super Admin activation, moderated testimonials and authorization tests are available for review. Billing is disabled.
+Current evidence and remaining release gates: [release readiness](docs/RELEASE_READINESS_2026-10-21.md). Work stays on `feature/kazicoach-v2`. Master, hosted Supabase, production and billing are unchanged. The v2 branch has no automatic deployment workflow.
 
-Start with [local preview instructions](docs/LOCAL_PREVIEW.md), [checkpoint](docs/STATUS.md), [audit](docs/REPO_AUDIT.md), [approved decisions](docs/DECISIONS.md) and [rollback](docs/ROLLBACK.md). Root [AGENTS.md](AGENTS.md) governs development. The existing v1 description below documents the original private role pack; v2 adds a five-scored-question guest trial and an upgrade invitation while preserving materials, local workspace data and export. Hosted operations enforce entitlements; bundled offline content uses advisory UI gating.
+Personal candidate/CV content is excluded from the public application bundle. Existing `kazicoach-tz:v1` browser data, materials, answers, custom cards and question IDs remain readable. Signing in uploads nothing automatically. Explicit summary sync excludes answers/documents and is available to registered Free accounts. Downloaded offline features and browser trial counts are advisory; paid backend calls enforce current trusted entitlements.
 
-A polished, offline-first Tanzanian public-service interview preparation MVP. The initial role pack prepares **Nyunyusa Twaha Mrisho** for **Radiation Safety Inspector II (Nuclear Physics)** at TAEC.
+## Private preview
 
-## Included
-
-- 33 tailored oral panel questions with model answers and Kiswahili coaching hints
-- 15 written role/technical/scenario checks
-- Realistic five-member panel: Chairperson, Secretary, two technical members and a public-service member
-- Mixed, male, female, soft and deep interviewer voice modes using the best voices available on the device
-- Five-point probable answers with mnemonics and an eye-controlled blurred reveal
-- Browser speech recognition with typed fallback
-- Browser text-to-speech
-- Explainable concept/depth/structure scoring
-- XP, streaks, levels, category progress, trend and realistic score-sensitive improvement suggestions
-- End-of-session repeat or performance-reset flow that preserves preparation materials
-- Local TXT/MD/PDF/DOCX extraction and image-reference uploads
-- Local question generation with no API
-- Optional Gemini generation through a server-side Cloudflare Pages Function
-- Responsive mobile/desktop UI and offline service worker
-- Local JSON data export/reset
-- Current CV-grounded profile plus additional field questions from the uploaded Tanzania regulation and deep-research notes
-
-## Run locally
-
-```bash
-npm install
+```powershell
+npm ci
 npm run dev
 ```
 
-Open the Vite URL. The core app needs no environment variables. Vite does not emulate the Cloudflare Pages Function; local and built-in generation still work.
+Open http://127.0.0.1:5173/. No account or hosted service is required. Vite binds loopback and refuses a conflicting port.
 
-## Quality checks
+## Local account review
 
-```bash
-npm test
-npm run build
+```powershell
+supabase start
+supabase migration up --local
+npm run preview:setup
+npm run dev
 ```
 
-## Deploy to Cloudflare Pages
+Fixture tools accept only this checkout's isolated `kazicoach-tz` stack. Its current API port is 57251; tools validate CLI discovery against `supabase/config.toml`. Setup refreshes the matching local public key after a stack restart. See [local preview](docs/LOCAL_PREVIEW.md) for fixtures and MFA instructions. Keep real documents and customer data out of disposable accounts.
 
-1. Push this directory to GitHub.
-2. Create a Cloudflare Pages project.
-3. Build command: `npm run build`
-4. Build output directory: `dist`
-5. Add an encrypted secret named `GEMINI_API_KEY` only if AI generation is wanted.
-6. Optionally add `GEMINI_MODEL` (default: `gemini-2.5-flash`).
-7. Deploy. Pages will publish `functions/api/generate.ts` at `/api/generate`.
+## Checks
 
-Before broad public launch, add Cloudflare Turnstile and durable per-IP/user rate limiting to the AI route.
+```powershell
+npm test
+npm run test:db
+npm run test:local
+npm run test:recovery
+npm run lint
+npm run lint:functions
+npm run lint:eslint
+npm run test:release-config
+npm run build
+npm run audit:release
+npm run smoke
+npm audit --audit-level=moderate
+```
 
-## Deploy to GitHub Pages (static, no AI)
+`test:db` uses disposable PostgreSQL with no published ports and includes RLS, MFA, entitlement lifecycle, pagination and backup restoration. Auth/recovery tests use only local services and a synthetic inbox. They do not send hosted email or call a paid provider.
 
-The app is built with a relative Vite base (`./`) so it works under the project sub-path:
+## Hosted preparation
 
-- Site URL: `https://<your-username>.github.io/kazicoach-tz/`
-- Enabled: Repo → Settings → Pages → Source **GitHub Actions** (or push to a `gh-pages` branch).
-- The included `.github/workflows/deploy.yml` builds with `npm ci && npm run build`, runs tests, and publishes `dist` via `actions/deploy-pages`.
+The default production build is sanitized private mode. An explicit hosted build requires all `KAZICOACH_RELEASE_*` inputs described in [.env.example](.env.example), through the build process environment. It never inherits local account settings from `.env.local`. The client accepts only the exact configured HTTPS app origin, canonical Supabase project endpoint and publishable key. Server bindings are configured separately. No privileged Supabase key is required by the application.
 
-GitHub Pages is static-only, so the optional AI "Cloud coach" route (`functions/api/generate.ts`) is **not available** there; the built-in offline question generation keeps working.
-
-## Privacy model
-
-- Core app and scoring run in the browser.
-- Files are extracted locally and capped before persistence.
-- Raw audio is not stored.
-- AI generation sends selected text only after explicit confirmation.
-- API keys remain server-side.
-- Progress is stored in `localStorage`; users can export or delete it.
-
-## Content warning
-
-This is an independent educational tool—not an official PSRS, Ajira Portal, TAEC, or IAEA product. Review current legal and technical facts against official sources. Non-sensitive candidate facts are grounded in the current uploaded application/CV; model answers must not be used to invent duties, achievements or research results.
-
-## Project documents
-
-The v2 requirements are in [docs/PRODUCT_REQUIREMENTS.md](docs/PRODUCT_REQUIREMENTS.md), with approved launch changes in [docs/DECISIONS.md](docs/DECISIONS.md).
+Preparing configuration does not authorize hosted connection, migration, owner provisioning, provider enablement, merge or deployment. Follow the [deployment/backup checklist](docs/PRODUCTION_DEPLOYMENT_CHECKLIST.md), [entitlement audit](docs/ENTITLEMENT_AUDIT.md), [recovery/retention proposal](docs/RECOVERY_AND_RETENTION_PROPOSAL.md) and [draft PR](docs/DRAFT_PR.md). Complete fresh Samsung acceptance and approved staging validation before release.

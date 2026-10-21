@@ -1,0 +1,77 @@
+{
+  "status": "PASS",
+  "checks": [
+    "bundled candidate personal content",
+    "review accounts",
+    "test password",
+    "review fixture testimonials",
+    "privileged key",
+    "review publishable key",
+    "local review endpoint",
+    "local bootstrap tooling",
+    "configured local value",
+    "configured local value"
+  ],
+  "files": [
+    {
+      "file": "dist/.nojekyll",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "dist/assets/docx-ekPsqTV_.js",
+      "bytes": 6817,
+      "sha256": "8aa6cd5796098a56787165e3f8526d79483e949ee12fde6de6fa3b01abced121"
+    },
+    {
+      "file": "dist/assets/index-B8zkuoUc.css",
+      "bytes": 59207,
+      "sha256": "ad343b059315e42a395dca239948f9d6c024e4b52169b43ef0bd8eee3eee4e03"
+    },
+    {
+      "file": "dist/assets/index-DDzzjWoM.js",
+      "bytes": 330219,
+      "sha256": "d16d16d5c2e1284f23d81fad14382212b8c84f90571e134c9978da4beed03602"
+    },
+    {
+      "file": "dist/assets/pdf-D4CLSQSE.js",
+      "bytes": 353088,
+      "sha256": "cf7950c9fcd188f103478ec5134e6c8f0c5224528820675b0f8ecff6b533a8bb"
+    },
+    {
+      "file": "dist/assets/pdf.worker-BgryrOlp.mjs",
+      "bytes": 2209730,
+      "sha256": "7c237f83fa56bce645d8af51d183c9c56ba7b2d2928ff42754dc7020bea36323"
+    },
+    {
+      "file": "dist/assets/pdf.worker-DmCFzxWo.js",
+      "bytes": 83,
+      "sha256": "1c17c63a70b543764bdc7e5b7006d9b0342ccaadee0b443fb213ef07ee433b8a"
+    },
+    {
+      "file": "dist/assets/supabase-DQxmrbwW.js",
+      "bytes": 214497,
+      "sha256": "17322d7f2b01abbb8a8ee67871f07aca5813380db28c88eb339227aaca66f7e0"
+    },
+    {
+      "file": "dist/index.html",
+      "bytes": 722,
+      "sha256": "cfaed19cb04334e4d266fb8a23598863790f45aee4a3c86590c357299ec06dc1"
+    },
+    {
+      "file": "dist/manifest.webmanifest",
+      "bytes": 255,
+      "sha256": "fde976c370552258ffcb37e79fda344c5a64d903013b3e5e28729858ff5f951d"
+    },
+    {
+      "file": "dist/sw.js",
+      "bytes": 2423,
+      "sha256": "9d3bb6415bed32eb73d193b3414891deab3efd4cc73e6f04817776f22b45b3b1"
+    },
+    {
+      "file": "dist/_headers",
+      "bytes": 608,
+      "sha256": "c1f9021ffc3546352858ceee7c53ac32a4418aceff00eb6ce89662b06fa18988"
+    }
+  ]
+}

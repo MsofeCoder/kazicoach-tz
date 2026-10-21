@@ -1,0 +1,5 @@
+
+> kazicoach-tz@0.1.0 test:recovery
+> node scripts/test-recovery.mjs
+
+Local recovery passed: synthetic inbox delivery, exact callback, PKCE wrong-browser denial, recovery event, password replacement, old-password/refresh denial and used-code denial. No hosted email/provider used.

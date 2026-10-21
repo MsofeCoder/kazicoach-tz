@@ -1,0 +1,20 @@
+
+> kazicoach-tz@0.1.0 build
+> tsc -b && vite build
+
+vite v8.3.5 building client environment for production...
+`output.codeSplitting.groups[0].name` is a function. Set `output.codeSplitting.groups[0].debugName` so the bundler timing report can identify this group.
+transforming...
+✓ 1646 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                          0.72 kB │ gzip:   0.41 kB
+dist/assets/pdf.worker-BgryrOlp.mjs  2,209.73 kB
+dist/assets/index-B8zkuoUc.css          59.20 kB │ gzip:  11.90 kB
+dist/assets/pdf.worker-DmCFzxWo.js       0.08 kB │ gzip:   0.10 kB
+dist/assets/docx-ekPsqTV_.js             6.81 kB │ gzip:   3.44 kB
+dist/assets/supabase-DQxmrbwW.js       214.49 kB │ gzip:  55.20 kB
+dist/assets/index-BMd9fDUj.js          330.25 kB │ gzip: 103.11 kB
+dist/assets/pdf-D3G3O7aU.js            353.08 kB │ gzip: 102.75 kB
+
+✓ built in 408ms

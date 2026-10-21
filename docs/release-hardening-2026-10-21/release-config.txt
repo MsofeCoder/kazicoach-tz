@@ -1,0 +1,2 @@
+Release configuration passed: invalid endpoint rejected, synthetic hosted build/CSP/artifact audit verified without contacting any hosted endpoint.
+Default sanitized private-mode build restored.

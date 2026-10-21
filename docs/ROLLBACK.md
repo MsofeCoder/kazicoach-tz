@@ -1,5 +1,7 @@
 # Rollback and migration review
 
+**2026-10-21:** use only reviewed sanitized artifacts compatible with the additive schema. Earlier artifacts contain personal candidate content and lack MFA enforcement; they are not safe public rollback targets. Do not drop user tables, reset hosted data or remove MFA to recover a release. Test real backup restoration and deletion reconciliation on approved staging before production. Current local evidence: [readiness report](RELEASE_READINESS_2026-10-21.md).
+
 ## Application
 Work is isolated on `feature/kazicoach-v2`; master remains at `bba3502`. No remote writes occurred. Save any local changes before leaving the feature branch. Browser key `kazicoach-tz:v1` is unchanged: the original app can still read the private workspace. New state is isolated in local Auth storage, `kazicoach-tz:v2:trial-used` and per-account summary queues. Never remove the v1 key to roll back the feature.
 

@@ -1,5 +1,15 @@
 # Dependency review — 2026-10-19
 
+## Remediation completed — 2026-10-21
+
+The current lockfile pins Vite **8.3.5** and removes Mammoth, argparse and sprintf-js. Fresh installation and audit report **zero known vulnerabilities** at this checkpoint. CI fails on moderate-or-higher findings. This is a point-in-time advisory result, not proof against unknown vulnerabilities. The [upstream Vite advisory](https://github.com/advisories/GHSA-698v-4r3x-3vcv) and archived audit explain the original finding.
+
+DOCX import now uses pinned **fflate 0.8.3** and native XML parsing for plain text. Only body/footnote/endnote parts are selected before decompression; external relationships are ignored and imported content is never rendered as HTML. It preserves the 8 MB input limit and adds 4 MB selected expanded XML, 2,000 entries, 100,000 visited nodes and depth 128 limits. DTD/entities and duplicate parts are rejected. Synthetic tests cover paragraphs, split runs, tables, Unicode, tabs/breaks, notes, ignored deleted/link content and bounded rejection. The lazy DOCX chunk is roughly 7 KB before gzip, versus roughly 492 KB previously. PDF parsing disables dynamic evaluation/font loading.
+
+This replacement follows the prior maintained-parser option instead of forcing Mammoth 0.3.29 or incompatible argparse overrides. Rich formatting and embedded images are not imported; unusual/oversized or protected documents may be rejected safely. Real-device synthetic document corpus acceptance remains a gate. See [current evidence](RELEASE_READINESS_2026-10-21.md). The historical analysis below no longer describes the installed dependency graph.
+
+## Archived original finding and plan
+
 Status: reviewed; no breaking dependency changes made. The three moderate findings remain visible in `npm audit`. No suppressed advisories, forced downgrade, unreviewed override or hand-edited vendor files were introduced.
 
 ## Findings and reachability

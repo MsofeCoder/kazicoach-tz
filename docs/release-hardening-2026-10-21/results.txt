@@ -1,0 +1,23 @@
+test exit=0
+test:db exit=0
+test:local exit=0
+test:recovery exit=0
+lint exit=0
+lint:functions exit=2
+lint:eslint exit=0
+build exit=0
+audit:release exit=0
+smoke exit=0
+dependency-audit exit=0
+db-security exit=0
+db-performance exit=0
+lint:functions final exit=0
+release-config exit=0
+final local-MFA integration exit=0
+synthetic owner code helper exit=0 (value not recorded)
+final release-config exit=0
+final build exit=0
+final artifact audit exit=0
+final smoke exit=0
+local preview HTTP 200
+created autonomous UAT fixtures cleaned; existing review users preserved

@@ -1,0 +1,5 @@
+
+> kazicoach-tz@0.1.0 smoke
+> node scripts/smoke.mjs
+
+Smoke passed: app shell and 9 offline assets; no privileged key markers.

@@ -1,5 +1,7 @@
 # Checkpoint — local v2 review
 
+**Latest:** [release hardening — 2026-10-21](RELEASE_READINESS_2026-10-21.md): 72 unit tests, 13 database scenarios, local Auth/recovery integration and zero known dependency findings. Added MFA enforcement, hosted configuration preparation, privacy-safe public content and backup-restoration checks. Fresh physical-phone and hosted staging acceptance remain pending. Older results below are historical.
+
 Latest corrective work: [CORRECTIVE_CHECKPOINT.md](CORRECTIVE_CHECKPOINT.md). 52 unit tests and 8 PostgreSQL authorization scenarios pass; selected mobile cases and physical-phone WhatsApp checks pass. Remaining Plus/admin mobile UAT is explicitly pending browser-tool access. See that report before treating older evidence below as current.
 
 Branch: `feature/kazicoach-v2`, created from local master `bba3502`. Master is unchanged. No push, merge, deployment, hosted project inspection or hosted mutation.

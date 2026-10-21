@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.0.0 release hardening — 2026-10-21, unreleased
+- Remove bundled candidate/CV history and stale interview assertions while preserving private workspace data and question IDs.
+- Pin Vite 8.3.5; replace vulnerable DOCX dependency chain with bounded local ZIP/XML text extraction; current audit reports zero known findings.
+- Repair local port/key discovery, restrict Vite to loopback and disable automatic legacy deployment.
+- Prepare default-disabled exact-origin HTTPS account/server configuration and static/Functions security headers.
+- Require live recent MFA sessions for all privileged administration; add owner security UI and bounded admin pagination.
+- Add PKCE confirmation/recovery, safe callback caching, Free registered summary sync and larger-export tests.
+- Verify 72 unit tests, 13 PostgreSQL scenarios, local Auth/recovery, isolated backup restoration and artifact/configuration checks. Physical Samsung, hosted staging and operational approval gates remain open.
+
 ## 2.0.0 corrective local review — 2026-10-19
 - Configure approved local business WhatsApp through audited admin settings and generate package-specific privacy-minimized upgrade links.
 - Restrict mixed voices to Plus in all selectors and speech runtime; keep Basic/Free single-coach practice intact.

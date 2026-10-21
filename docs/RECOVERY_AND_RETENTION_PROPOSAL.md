@@ -1,5 +1,17 @@
 # Account recovery and data retention — owner approval proposal
 
+**Implementation update — 2026-10-21:** PKCE recovery/confirmation callbacks and owner MFA enrollment/verification are implemented. Privileged backend operations enforce live MFA session and recent TOTP checks. Local integration validates recovery delivery to a synthetic inbox, PKCE and session/password boundaries. Hosted sender/redirects, expired-link/UI acceptance, owner transfer/factor-loss procedures and real backup reconciliation remain release gates. The owner supplied an intended owner/contact email; this does not constitute explicit approval of the retention periods below. No purge job is enabled. See [current readiness](RELEASE_READINESS_2026-10-21.md).
+
+Final checkpoint cross-reference: [production checklist](PRODUCTION_DEPLOYMENT_CHECKLIST.md). Recommendations below remain unapproved; they are not enabled by the security checkpoint.
+
+## Admin security release requirements
+
+- Enforce live trusted role membership, AAL2/MFA and recent authentication in privileged backend RPCs before public administration is enabled. Current local implementation checks trusted membership only; MFA is not yet a backend requirement. Adding a UI prompt alone is insufficient.
+- Assign a single verified real owner; prevent public self-registration from assigning roles, restrict provider dashboard access and keep recovery codes offline. No synthetic review account may become a production admin.
+- Audit successful package edits/activation/revocation, testimonial moderation, business contact and role bootstrap/changes with actor, target, time and minimized before/after state. Restrict audit reads, monitor denied privileged requests without logging tokens and require a reviewed procedure for role transfer and owner deletion.
+- Protect preview/staging as separate environments with separate credentials. Use a secrets manager/server bindings, short privileged session lifetime, rate limits and a tested emergency access-revocation procedure. A database superuser can bypass application audit/RLS; dashboard/operator access needs separate accountability.
+- Sole-admin deletion is blocked locally. Define and rehearse role transfer and identity verification so this protection does not permanently lock out a legitimate owner; do not add a default backdoor account.
+
 These are proposed engineering/product defaults, **not approved policy or a claim about Tanzanian statutory deadlines**. No recovery emails, purge job, production configuration or hosted data change is enabled by this document. The existing local account deletion workflow continues to delete owned live rows immediately and preserve the private browser workspace.
 
 ## Recovery recommendations

@@ -1,0 +1,27 @@
+-- REVIEW TEMPLATE ONLY. Do not execute against any hosted project without explicit approval.
+-- Approved operator uses psql parameters owner_user_id and owner_email, after independently
+-- verifying the account, confirmed email and exact database target. No default identity.
+-- Example parameter syntax: psql ... -v owner_user_id=<verified-uuid> -v owner_email=<verified-email>
+begin;
+select pg_advisory_xact_lock(hashtextextended('kazicoach-owner-bootstrap',0));
+select set_config('kc_bootstrap.owner_id', :'owner_user_id', true);
+select set_config('kc_bootstrap.owner_email', :'owner_email', true);
+do $$
+declare owner_id uuid=current_setting('kc_bootstrap.owner_id')::uuid;
+begin
+  if exists(select 1 from kc_private.admins) then
+    raise exception 'An administrator already exists. Use the separately reviewed transfer procedure.';
+  end if;
+  if not exists(select 1 from auth.users u where u.id=owner_id
+    and lower(u.email)=lower(current_setting('kc_bootstrap.owner_email'))
+    and u.email_confirmed_at is not null and u.deleted_at is null) then
+    raise exception 'Owner identity is not a confirmed matching account';
+  end if;
+  insert into kc_private.admins(user_id) values(owner_id);
+  insert into kc_private.audit(actor_id,action,target,details)
+    values(owner_id,'bootstrap_admin',owner_id::text,'{"procedure":"verified-owner-bootstrap","mfa_required":true}');
+end $$;
+commit;
+-- Role membership permits enrollment UI only; privileged operations still require live MFA.
+-- Validate password-only denial, TOTP enrollment/verification, MFA expiry and audited operations
+-- on approved staging before production. Do not create a permanent bootstrap API/backdoor.

@@ -1,0 +1,4 @@
+
+> kazicoach-tz@0.1.0 lint:functions
+> tsc -p tsconfig.functions.json --pretty false
+

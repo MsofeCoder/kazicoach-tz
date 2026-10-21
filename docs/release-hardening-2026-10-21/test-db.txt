@@ -1,0 +1,13 @@
+
+> kazicoach-tz@0.1.0 test:db
+> vitest run tests/database.test.ts --testTimeout=30000 --hookTimeout=60000
+
+
+ RUN  v4.1.11 <workspace>
+
+
+ Test Files  1 passed (1)
+      Tests  13 passed (13)
+   Start at  12:53:56
+   Duration  39.80s (transform 64ms, setup 0ms, import 94ms, tests 39.45s, environment 0ms)
+

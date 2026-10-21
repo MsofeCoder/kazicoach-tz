@@ -1,0 +1,6 @@
+
+> kazicoach-tz@0.1.0 test:release-config
+> node scripts/test-release-config.mjs
+
+Release configuration passed: invalid endpoint rejected, synthetic hosted build/CSP/artifact audit verified without contacting any hosted endpoint.
+Default sanitized private-mode build restored.

@@ -1,5 +1,7 @@
 # Product decisions — approved 2026-10-19
 
+**2026-10-21 owner decision:** registered Free accounts may sync their own selected progress summaries. Export/deletion remains independent of premium. The owner supplied an intended owner/contact email, which is kept out of the public client and awaits verified provisioning. Exact release domain/project targets and proposed retention periods are not inferred from that response. Default-disabled exact-origin HTTPS configuration is prepared locally.
+
 Approved directly by the owner in this chat:
 - Free: no account required, five-question browser trial, own preparation-material uploads and a professional upgrade invitation. Preserve the private workspace.
 - Premium Basic: TSh 3,000 / 7 days; unlimited local practice subject to abuse controls, personalized questions, oral/written practice, feedback, progress and gamification.
