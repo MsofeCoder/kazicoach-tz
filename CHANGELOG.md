@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.0 visual interactive walkthrough — 2026-10-23
+
+- Redesign onboarding with illustrated feature previews, labelled steps, a split desktop layout and mobile stacking with a persistent footer.
+- Let users explore document types, oral/written examples, answer structure, improvement topics and private/account choices inside safe tutorial previews.
+- Preserve replay, skip, keyboard access, reduced motion and existing workspace/recovery safeguards; no uploads, cloud calls or trial usage occur in examples.
+
 ## 2.0.0 guided introduction — 2026-10-21
 
 - Add a five-step first-use guide with keyboard-accessible controls, skip/replay and shortcuts to real workspace pages; reopen from the menu or Settings.
