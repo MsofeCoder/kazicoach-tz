@@ -28,8 +28,8 @@ export default function WelcomeGuide({ close, navigate }: { close: () => void; n
     <div className="guide-top"><span><Compass size={19} aria-hidden="true" /> KaziCoach <b>Getting started</b></span><button className="icon-button" onClick={close} aria-label="Close guide"><X size={20} /></button></div>
     <nav className="guide-steps" aria-label="Guide steps">{guideSteps.map((item, index) => <button key={item.title} aria-label={`Step ${index + 1}: ${item.title}`} aria-current={index === step ? 'step' : undefined} onClick={() => setStep(index)}><span>{index < step ? <Check size={15} aria-hidden="true" /> : index + 1}</span><small>{['Welcome', 'Prepare', 'Practise', 'Grow', 'Your choice'][index]}</small></button>)}</nav>
     <div className="guide-body">
-    <GuidePreview key={step} step={step} />
-    <div className="guide-content" key={step}>
+    <GuidePreview key={`preview-${step}`} step={step} />
+    <div className="guide-content" key={`copy-${step}`}>
       <span className="eyebrow">{current.label}</span>
       <h2 id="guide-title" ref={title} tabIndex={-1}>{current.title}</h2>
       <p id="guide-description">{current.body}</p>
