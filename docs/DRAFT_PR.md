@@ -19,3 +19,5 @@ Recovery entry is now a visible button inside the sign-in card, opening a labell
 Account feedback distinguishes local test accounts from staging, maps known failures to safe actionable alerts and preserves sign-in/out feedback. Recovery only reports conditional acceptance after a successful request; returned/thrown failures show an error. 92 tests plus types/lint/build/smoke/artifact checks pass. No hosted mutation or deployment. See [checkpoint](ACCOUNT_FEEDBACK_2026-10-25.md).
 
 Recovery resend protection reserves a 65-second timestamp-only cooldown before calling the SDK, preventing ordinary immediate retries that can invalidate the prior verifier on rate-limit failure. Includes a mocked SDK reproduction, missing-verifier guidance and browser reload evidence. 97 tests pass; hosted MCP inspection was read-only and no deployment performed.
+
+Staging release: owner-authorized deployment dee80769 publishes source f87924c to the staging alias. See [deployment evidence and rollback](staging-release-2026-10-25/CHECKPOINT.md). Real owner password replacement and production launch acceptance remain outstanding.
