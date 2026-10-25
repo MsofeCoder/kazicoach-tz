@@ -23,3 +23,5 @@ Recovery resend protection reserves a 65-second timestamp-only cooldown before c
 Staging release: owner-authorized deployment dee80769 publishes source f87924c to the staging alias. See [deployment evidence and rollback](staging-release-2026-10-25/CHECKPOINT.md). Real owner password replacement and production launch acceptance remain outstanding.
 
 Browser acceptance found written-01 copied an oral personal-experience stem despite regulatory-role choices. Corrected stem/source without changing IDs or scores; bank integrity regression and 98 tests pass. [QA evidence](acceptance-2026-10-25/CHECKPOINT.md). Fix verified locally; staging still dee80769.
+
+Written-question correction now deployed to staging e66a8e75 under owner authorization; served bundle and security checks verified. No database or production changes.

@@ -1,0 +1,31 @@
+{
+  "source": "bdc0d79",
+  "deployment": "e66a8e75",
+  "origin": "https://staging.kazicoach-tz-441.pages.dev",
+  "pageStatus": 200,
+  "assets": [
+    {
+      "path": "./assets/index-DHJHQAUP.js",
+      "status": 200
+    },
+    {
+      "path": "./assets/supabase-DQxmrbwW.js",
+      "status": 200
+    },
+    {
+      "path": "./assets/index-Kzg3THSh.css",
+      "status": 200
+    }
+  ],
+  "correctedStem": true,
+  "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://qkyuqfqrixohcbdkchoo.supabase.co; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'",
+  "serviceWorker": {
+    "status": 200,
+    "cache": "no-cache"
+  },
+  "disabledAI": {
+    "status": 503,
+    "cache": "no-store"
+  },
+  "browser": "Disabled in Work settings; local visual verification retained in prior checkpoint"
+}
