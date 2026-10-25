@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { cloud } from "../lib/cloud";
 import {AdminSecurity} from './AdminSecurity';
 import {RecoveryRequest} from './AccountRecovery';
+import PasswordField from './PasswordField';
 import {collectPages} from '../lib/export';
 import { useAccount } from "../accounts";
 import { summarizeProgress, queueKey, readQueue } from "../lib/sync";
@@ -460,17 +461,14 @@ function AccountPanelContent() {
                 onChange={(e) => setEmail(e.target.value)}
               />
             </label>
-            <label>
-              Password
-              <input
-                type="password"
+              <PasswordField
+                label="Password"
                 minLength={8}
                 autoComplete="current-password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
-            </label>
             <button className="button primary" disabled={busy}>
               Sign in
             </button>

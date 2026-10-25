@@ -49,3 +49,5 @@ Changes are reversible by leaving this feature branch after saving local work. S
 - `2f854e9`: schema, trusted operations, queue helpers, authorization tests, CI and offline-shell foundation.
 - `6bfccc8`: optional account UI, trial/package flows, progress and Super Admin preview.
 - Final documentation checkpoint includes the verification evidence and `local-preview.png`.
+
+**Password visibility — 2026-10-25:** [local checkpoint](password-visibility-2026-10-25/CHECKPOINT.md). Eye toggles added to account/recovery password inputs, with automatic masking on field exit. 84 tests plus types/lint/build/smoke pass; actual desktop/mobile local UI verified. Not deployed; staging SMTP failure remains separate.

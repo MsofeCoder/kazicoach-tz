@@ -1,5 +1,6 @@
 import {useEffect,useRef,useState} from 'react';
 import {cloud} from '../lib/cloud';
+import PasswordField from './PasswordField';
 
 // Explicit PKCE callback only. The SDK verifies the verifier; recovery intent is checked too.
 export function AccountRecovery() {
@@ -40,8 +41,8 @@ export function AccountRecovery() {
   }
   return <section className="panel settings-section" aria-label="Account recovery"><h2>Recover your account</h2><p role="status">{message}</p>
     {ready&&<form className="account-form" onSubmit={event=>void submit(event)}>
-      <label>New password<input type="password" autoComplete="new-password" minLength={12} required value={password} onChange={event=>setPassword(event.target.value)}/></label>
-      <label>Confirm password<input type="password" autoComplete="new-password" minLength={12} required value={confirmation} onChange={event=>setConfirmation(event.target.value)}/></label>
+      <PasswordField label="New password" autoComplete="new-password" minLength={12} required value={password} onChange={event=>setPassword(event.target.value)}/>
+      <PasswordField label="Confirm password" autoComplete="new-password" minLength={12} required value={confirmation} onChange={event=>setConfirmation(event.target.value)}/>
       <button className="button primary" disabled={busy||password!==confirmation}>Save new password</button>
     </form>}
     {!ready&&<button className="button secondary" onClick={()=>setActive(false)}>Close recovery</button>}
