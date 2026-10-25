@@ -1,6 +1,7 @@
 import {useEffect,useId,useRef,useState} from 'react';
 import {accountEnvironment,cloud} from '../lib/cloud';
-import {authFailure,requestRecovery, type Notice, type NoticeTone} from '../lib/feedback';
+import {authFailure, type Notice, type NoticeTone} from '../lib/feedback';
+import {guardedRecovery,recoveryWait} from '../lib/recovery';
 import ActionNotice from './ActionNotice';
 import PasswordField from './PasswordField';
 
@@ -25,10 +26,11 @@ export function AccountRecovery() {
     void cloud.auth.exchangeCodeForSession(code).then(async({data,error})=>{
       if(error||(recovery&&!recoveryDetected)||!data.session) {
         if(!error)await cloud!.auth.signOut({scope:'local'});
-        setMessage('Recovery link is invalid, expired, already used or opened in a different browser. Request a new link.');
+        if(error)setNotice(authFailure(error,accountEnvironment==='local'));
+        else setMessage('Recovery link is invalid, expired, already used or opened in a different browser. Request a new link.');
       } else if(recovery) {setReady(true);setMessage('Choose a new password. Never share this link or your password with support.','info');}
       else {setMessage('Email confirmed. Your account is signed in.','success');}
-    }).catch(()=>setMessage('Recovery could not complete. Request a new link.')).finally(()=>listener.subscription.unsubscribe());
+    }).catch(error=>setNotice(authFailure(error,accountEnvironment==='local'))).finally(()=>listener.subscription.unsubscribe());
   },[active]);
   if(!active)return null;
   async function submit(event:React.FormEvent) {
@@ -60,6 +62,10 @@ export function RecoveryRequest({ initialEmail = '', onOpen }: { initialEmail?: 
   const formId=useId();
   const emailInput=useRef<HTMLInputElement>(null);
   const [email,setEmail]=useState('');const [busy,setBusy]=useState(false);const [notice,setNotice]=useState<Notice|null>(null);
+  const memory=useRef(new Map<string,string>());
+  const gate=useRef({getItem:(key:string)=>{try{return localStorage.getItem(key)??memory.current.get(key)??null;}catch{return memory.current.get(key)??null;}},setItem:(key:string,value:string)=>{memory.current.set(key,value);try{localStorage.setItem(key,value);}catch{/* Session-only cooldown remains available. */}}});
+  const [remaining,setRemaining]=useState(()=>recoveryWait(gate.current));
+  useEffect(()=>{if(!open)return;const timer=window.setInterval(()=>setRemaining(recoveryWait(gate.current)),1000);return()=>clearInterval(timer);},[open]);
   useEffect(()=>{if(open)emailInput.current?.focus();},[open]);
   if(!cloud)return null;
   return <div className="recovery-request"><button type="button" className="button secondary recovery-toggle" aria-expanded={open} aria-controls={formId} onClick={()=>{
@@ -68,8 +74,8 @@ export function RecoveryRequest({ initialEmail = '', onOpen }: { initialEmail?: 
     event.preventDefault();if(busy)return;setBusy(true);
     setNotice({tone:'loading',title:'Sending reset request',message:'Please wait while we contact the account service.'});
     const redirect=new URL(location.pathname,location.origin);redirect.searchParams.set('kc_recovery','1');
-    void requestRecovery(()=>cloud!.auth.resetPasswordForEmail(email.trim(),{redirectTo:redirect.href}),accountEnvironment==='local').then(result=>{
+    void guardedRecovery(()=>cloud!.auth.resetPasswordForEmail(email.trim(),{redirectTo:redirect.href}),gate.current,accountEnvironment==='local').then(result=>{
       setNotice(result);if(result.tone==='success')setEmail('');
-    }).finally(()=>setBusy(false));
-  }}><label>Account email<input ref={emailInput} type="email" required autoComplete="email" autoCapitalize="none" spellCheck={false} value={email} onChange={event=>setEmail(event.target.value)}/></label><button className="button primary" disabled={busy}>{busy?'Sending…':'Send reset link'}</button></form><ActionNotice notice={notice}/></section>}</div>;
+    }).finally(()=>{setBusy(false);setRemaining(recoveryWait(gate.current));});
+  }}><label>Account email<input ref={emailInput} type="email" required autoComplete="email" autoCapitalize="none" spellCheck={false} value={email} onChange={event=>setEmail(event.target.value)}/></label><button className="button primary" disabled={busy||remaining>0}>{busy?'Sending…':remaining>0?`Wait ${remaining}s`:'Send reset link'}</button></form>{remaining>0&&<p role="status">Wait before requesting another link. Open any recovery email in the same browser and profile.</p>}<ActionNotice notice={notice}/></section>}</div>;
 }

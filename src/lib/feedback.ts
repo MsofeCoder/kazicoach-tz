@@ -6,7 +6,8 @@ export function authFailure(error: unknown, local = false): Notice {
   const data = error && typeof error === 'object' ? error as {code?: string; status?: number; name?: string} : {};
   const code = data.code;
   let message = 'The account service could not complete this request. Try again shortly. Your private practice remains available.';
-  if (code === 'invalid_credentials') message = local
+  if (data.name === 'AuthPKCECodeVerifierMissingError' || code === 'bad_code_verifier' || code === 'flow_state_not_found') message = 'This link cannot be completed in this browser. It may have been opened in a different browser profile or replaced by another request. Request one new link, wait for the email, and open it once in the same browser and profile.';
+  else if (code === 'invalid_credentials') message = local
     ? 'These details were not accepted by the local test service. Accounts created on staging work only on staging.'
     : 'The email or password was not accepted. Check your details or use Forgot password? to reset your password.';
   else if (code === 'email_not_confirmed') message = 'Confirm your email before signing in. Check your inbox and Spam folder for the confirmation email.';
