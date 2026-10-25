@@ -58,3 +58,4 @@ export const cloud = config
       auth: { storageKey: hosted ? "kazicoach-account-auth" : "kazicoach-local-auth", detectSessionInUrl: false, flowType:'pkce' },
     })
   : null;
+export const accountEnvironment = !config ? 'private' : hosted ? 'hosted' : 'local';

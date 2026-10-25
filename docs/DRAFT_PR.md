@@ -15,3 +15,5 @@ Latest frontend increment (25 October): a seven-stop tour navigates to and highl
 Account password fields now offer an accessible eye toggle with masking on field exit, shared with recovery inputs. Local desktop/mobile interaction verified; no authentication behavior changed. See [password visibility evidence](password-visibility-2026-10-25/CHECKPOINT.md).
 
 Recovery entry is now a visible button inside the sign-in card, opening a labelled form with email prefill, focus and sending feedback. Request/callback security behavior is unchanged. 84 tests/types/lint/build/smoke pass; this increment awaits browser review and staging deployment.
+
+Account feedback distinguishes local test accounts from staging, maps known failures to safe actionable alerts and preserves sign-in/out feedback. Recovery only reports conditional acceptance after a successful request; returned/thrown failures show an error. 92 tests plus types/lint/build/smoke/artifact checks pass. No hosted mutation or deployment. See [checkpoint](ACCOUNT_FEEDBACK_2026-10-25.md).

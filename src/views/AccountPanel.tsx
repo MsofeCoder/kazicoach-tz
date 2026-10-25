@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { cloud } from "../lib/cloud";
+import { accountEnvironment, cloud } from "../lib/cloud";
+import { authFailure, type Notice, type NoticeTone } from '../lib/feedback';
+import ActionNotice from './ActionNotice';
 import {AdminSecurity} from './AdminSecurity';
 import {RecoveryRequest} from './AccountRecovery';
 import PasswordField from './PasswordField';
@@ -294,7 +296,7 @@ function Administration() {
     </article>
   );
 }
-function AccountPanelContent() {
+function AccountPanelContent({ notice, setNotice }: { notice: Notice | null; setNotice: (notice: Notice | null) => void }) {
   const account = useAccount();
   const {
     session,
@@ -306,7 +308,7 @@ function AccountPanelContent() {
     disableSync,
     sync,
   } = account;
-  const [message, setMessage] = useState("");
+  const setMessage = (message: string, tone: NoticeTone = 'info') => setNotice({message, tone, title: tone === 'error' ? 'Action could not be completed' : tone === 'success' ? 'Action completed' : tone === 'loading' ? 'Please wait' : 'Account update'});
   const [busy, setBusy] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -321,30 +323,27 @@ function AccountPanelContent() {
     setEmail(''); setPassword(''); disableSync();
     try {
       const result=await cloud!.auth.signOut({scope:'local'});
-      if(result.error) setMessage('Sign-out did not complete. Please retry.');
-    } catch {setMessage('Sign-out did not complete. Please retry.');}
+      if(result.error) setMessage('Sign-out did not complete. Please retry.', 'error');
+      else setMessage('You are signed out. Your private workspace is still available.', 'success');
+    } catch {setMessage('Sign-out did not complete. Please retry.', 'error');}
   }
   async function authenticate(event: FormEvent, signup = false) {
     event.preventDefault();
-    if (!cloud) return;
+    if (!cloud || busy) return;
     setBusy(true);
-    setMessage("Connecting securely…");
+    setMessage(signup ? 'Creating your account…' : 'Signing you in…', 'loading');
     try {
       const result = signup
-        ? await cloud.auth.signUp({ email, password, options:{emailRedirectTo:new URL(`${location.pathname}?kc_auth=1`,location.origin).href} })
-        : await cloud.auth.signInWithPassword({ email, password });
-      setMessage(
-        result.error
-          ? "Unable to sign in or register. Check your details and account service."
-          : signup
-            ? "Check your email for confirmation if this account is eligible."
-            : "Signed in. Sync remains your choice.",
-      );
+        ? await cloud.auth.signUp({ email: email.trim(), password, options:{emailRedirectTo:new URL(`${location.pathname}?kc_auth=1`,location.origin).href} })
+        : await cloud.auth.signInWithPassword({ email: email.trim(), password });
+      if (result.error) setNotice(authFailure(result.error, accountEnvironment === 'local'));
+      else setMessage(signup ? accountEnvironment === 'local'
+        ? 'Registration accepted. Check the local test inbox if confirmation is required; no real email is sent.'
+        : 'Registration accepted. If eligible, check your inbox and Spam folder for confirmation and open it in this browser.'
+        : 'You are signed in. Progress sync remains your choice.', 'success');
       setPassword("");
-    } catch {
-      setMessage(
-        "Account service is unavailable. Private practice still works.",
-      );
+    } catch (error) {
+      setNotice(authFailure(error, accountEnvironment === 'local'));
     } finally {
       setBusy(false);
     }
@@ -387,10 +386,10 @@ function AccountPanelContent() {
         pendingProgress: readQueue(localStorage, session.user.id),
       });
       setMessage(
-        "Account export downloaded. Local workspace has a separate export below.",
+        "Account export downloaded. Local workspace has a separate export below.", 'success',
       );
     } catch {
-      setMessage("Export failed. Retry when connected.");
+      setMessage("Export failed. Retry when connected.", 'error');
     }
   }
   async function deleteAccount() {
@@ -406,13 +405,13 @@ function AccountPanelContent() {
     const { error } = await cloud.rpc("kc_delete_account");
     if (error) {
       setMessage(
-        "Deletion failed. Super Admin must transfer administration first; otherwise reconnect and retry.",
+        "Deletion failed. Super Admin must transfer administration first; otherwise reconnect and retry.", 'error',
       );
       return;
     }
     localStorage.removeItem(queueKey(session.user.id));
     await cloud.auth.signOut({ scope: "local" });
-    setMessage("Account deleted. Your private workspace is still available.");
+    setMessage("Account deleted. Your private workspace is still available.", 'success');
   }
   async function submitTestimonial(event: FormEvent) {
     event.preventDefault();
@@ -427,7 +426,7 @@ function AccountPanelContent() {
     setMessage(
       error
         ? "Unable to submit. Withdraw an existing submission before replacing it."
-        : "Submitted privately for review. It becomes public only after approval.",
+        : "Submitted privately for review. It becomes public only after approval.", error ? 'error' : 'success',
     );
     if (!error) {
       setBody("");
@@ -438,6 +437,8 @@ function AccountPanelContent() {
     <>
       <article className="panel settings-section account-section">
         <h2 data-tour="account">Optional account &amp; selected progress</h2>
+        {accountEnvironment === 'local' && <div className="account-environment"><strong>Local preview · test accounts only</strong><p>Your real KaziCoach account belongs to staging. Sign-in and password reset here use a separate local test service and inbox.</p><a className="button secondary" href="https://staging.kazicoach-tz-441.pages.dev/">Open staging for your real account</a></div>}
+        {session && <ActionNotice notice={notice} />}
         {!cloud ? (
           <p>
             Private mode is active. Accounts require an
@@ -445,7 +446,7 @@ function AccountPanelContent() {
             is connected.
           </p>
         ) : !session ? (
-          <form className="account-form" onSubmit={(e) => void authenticate(e)}>
+          <form className="account-form" aria-busy={busy} onSubmit={(e) => void authenticate(e)}>
             <label>
               Email
               <input
@@ -470,7 +471,7 @@ function AccountPanelContent() {
                 onChange={(e) => setPassword(e.target.value)}
               />
             <button className="button primary" disabled={busy}>
-              Sign in
+              {busy ? 'Please wait…' : 'Sign in'}
             </button>
             <button
               type="button"
@@ -557,7 +558,7 @@ function AccountPanelContent() {
                   })
                   .then(({ error }) =>
                     setMessage(
-                      error ? "Could not save profile." : "Display name saved.",
+                      error ? "Could not save profile." : "Display name saved.", error ? 'error' : 'success',
                     ),
                   );
               }}
@@ -629,7 +630,7 @@ function AccountPanelContent() {
                       setMessage(
                         error
                           ? "Could not withdraw. Retry when connected."
-                          : "Testimonial withdrawn, including any public version.",
+                          : "Testimonial withdrawn, including any public version.", error ? 'error' : 'success',
                       );
                     });
                 }}
@@ -639,7 +640,8 @@ function AccountPanelContent() {
             </form>
           </>
         )}
-        {!session && <RecoveryRequest initialEmail={email} />}
+        {!session && <ActionNotice notice={notice} />}
+        {!session && <RecoveryRequest initialEmail={email} onOpen={() => setNotice(null)} />}
         {cloud && (
           <>
             <button
@@ -648,8 +650,8 @@ function AccountPanelContent() {
                 void cloud!
                   .rpc("kc_public_testimonials")
                   .then(({ data, error }) => {
-                    if (error) setMessage("Public testimonials unavailable.");
-                    else setPublicItems(data);
+                    if (error) setMessage("Public testimonials unavailable. Check your connection and try again.", 'error');
+                    else {setPublicItems(data);setMessage(data?.length ? 'Approved testimonials loaded.' : 'There are no approved testimonials yet.', 'info');}
                   });
               }}
             >
@@ -664,9 +666,6 @@ function AccountPanelContent() {
             {publicItems?.length === 0 && <p>No approved testimonials yet.</p>}
           </>
         )}
-        <p role="status" aria-live="polite">
-          {message}
-        </p>
       </article>
       <Plans />
       <AdminSecurity />
@@ -677,6 +676,7 @@ function AccountPanelContent() {
 
 export default function AccountPanel() {
   const {session}=useAccount();
+  const [notice, setNotice] = useState<Notice | null>(null);
   // Recreate account-specific form state on logout, expiry or account switching.
-  return <AccountPanelContent key={session?.user.id??'guest'}/>;
+  return <AccountPanelContent key={session?.user.id??'guest'} notice={notice} setNotice={setNotice}/>;
 }

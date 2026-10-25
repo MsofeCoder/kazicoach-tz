@@ -1,0 +1,13 @@
+# Account feedback and environment clarity — 25 October 2026
+
+The local preview uses an isolated local Supabase endpoint, not the hosted launch account service. A read-only local Auth health probe could not reach the configured service. Real staging credentials are not local fixture credentials. The account UI now explicitly labels local test mode, explains the separate test inbox and links to the known staging alias; hosted account configuration and exact-origin checks are unchanged.
+
+Added shared ActionNotice with icon, title, readable body, distinct success/error/info/loading styling and accessible alert/status semantics. Authentication feedback is retained outside the identity-keyed form so success remains visible after sign-in/sign-out remount. Known provider codes map to safe actionable text (credentials, confirmation, rates, password policy, service/email failures) without rendering raw error payloads. Account export, profile, testimonial and deletion outcomes use explicit severity. Duplicate auth submits are blocked while busy.
+
+Corrected recovery request handling: returned errors and thrown failures now produce errors, rather than an unconditional apparent acceptance in finally. Accepted responses remain conditional to prevent account enumeration. Local requests explain their synthetic inbox; hosted responses direct users to email/Spam and the same browser. Recovery callback/password-save feedback uses the same notice component, with password mismatch guidance and loading states. Existing PKCE verification and sign-out behavior are retained.
+
+Verification: 92 tests in 12 suites pass, including returned/thrown recovery failures, non-enumerating acceptance, local/hosted distinction, raw-message exclusion and rendered alert/status semantics. App and Functions types, ESLint, build, smoke and release artifact scan pass. No dependencies/schema changes: npm ci and database suites not repeated. Live browser review remains unavailable because Work browser use was disabled in the preceding attempted verification. No new visual or live sign-in/recovery pass is claimed. No real credential entered; no email sent by the agent; no hosted data/configuration changed.
+
+Preview: npm run dev -> http://127.0.0.1:5173/ -> Settings. For real account tests use https://staging.kazicoach-tz-441.pages.dev/; this local increment requires a separate staging deployment before appearing there. Deployment and production launch are not performed by this change.
+
+Rollback: revert this isolated frontend commit on feature/kazicoach-v2 and rebuild. No schema rollback needed; preserve private browser data. Work remains on feature/kazicoach-v2 with master unchanged.

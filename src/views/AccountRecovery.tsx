@@ -1,5 +1,7 @@
 import {useEffect,useId,useRef,useState} from 'react';
-import {cloud} from '../lib/cloud';
+import {accountEnvironment,cloud} from '../lib/cloud';
+import {authFailure,requestRecovery, type Notice, type NoticeTone} from '../lib/feedback';
+import ActionNotice from './ActionNotice';
 import PasswordField from './PasswordField';
 
 // Explicit PKCE callback only. The SDK verifies the verifier; recovery intent is checked too.
@@ -9,7 +11,8 @@ export function AccountRecovery() {
   const [ready,setReady]=useState(false);
   const [password,setPassword]=useState('');
   const [confirmation,setConfirmation]=useState('');
-  const [message,setMessage]=useState('Checking your recovery link…');
+  const [notice,setNotice]=useState<Notice>({tone:'loading',title:'Checking account link',message:'Please wait while we verify this link.'});
+  const setMessage=(message:string,tone:NoticeTone='error')=>setNotice({message,tone,title:tone==='success'?'Action completed':tone==='info'?'Choose a new password':'Account recovery'});
   const [busy,setBusy]=useState(false);
   useEffect(()=>{
     if(!active||started.current)return;started.current=true;
@@ -23,46 +26,50 @@ export function AccountRecovery() {
       if(error||(recovery&&!recoveryDetected)||!data.session) {
         if(!error)await cloud!.auth.signOut({scope:'local'});
         setMessage('Recovery link is invalid, expired, already used or opened in a different browser. Request a new link.');
-      } else if(recovery) {setReady(true);setMessage('Choose a new password. Never share this link or your password with support.');}
-      else {setMessage('Email confirmed. Your account is signed in.');}
+      } else if(recovery) {setReady(true);setMessage('Choose a new password. Never share this link or your password with support.','info');}
+      else {setMessage('Email confirmed. Your account is signed in.','success');}
     }).catch(()=>setMessage('Recovery could not complete. Request a new link.')).finally(()=>listener.subscription.unsubscribe());
   },[active]);
   if(!active)return null;
   async function submit(event:React.FormEvent) {
-    event.preventDefault();if(!cloud||!ready||password!==confirmation)return;
+    event.preventDefault();if(!cloud||!ready||busy)return;
+    if(password!==confirmation){setMessage('The passwords do not match. Enter the same new password in both fields.');return;}
     setBusy(true);
+    setNotice({tone:'loading',title:'Updating password',message:'Please wait while your new password is saved.'});
     try {
       const {error}=await cloud.auth.updateUser({password});if(error)throw error;
       const signedOut=await cloud.auth.signOut({scope:'global'});
       setReady(false);setPassword('');setConfirmation('');
-      setMessage(signedOut.error?'Password updated. Session sign-out needs a retry before continuing.':'Password updated. Sign in again from Settings. Existing browser-private materials were preserved.');
-    } catch {setMessage('Password update did not complete. Use a new link or retry with a stronger password.');}
+      setMessage(signedOut.error?'Password updated. Session sign-out needs a retry before continuing.':'Password updated. Sign in again from Settings. Existing browser-private materials were preserved.',signedOut.error?'error':'success');
+    } catch (error) {setNotice(authFailure(error,accountEnvironment==='local'));}
     finally {setBusy(false);}
   }
-  return <section className="panel settings-section" aria-label="Account recovery"><h2>Recover your account</h2><p role="status">{message}</p>
+  return <section className="panel settings-section" aria-label="Account recovery"><h2>Recover your account</h2><ActionNotice notice={notice}/>
     {ready&&<form className="account-form" onSubmit={event=>void submit(event)}>
       <PasswordField label="New password" autoComplete="new-password" minLength={12} required value={password} onChange={event=>setPassword(event.target.value)}/>
       <PasswordField label="Confirm password" autoComplete="new-password" minLength={12} required value={confirmation} onChange={event=>setConfirmation(event.target.value)}/>
-      <button className="button primary" disabled={busy||password!==confirmation}>Save new password</button>
+      {confirmation && password!==confirmation && <p className="password-mismatch" role="status">Passwords do not match yet.</p>}
+      <button className="button primary" disabled={busy||password!==confirmation}>{busy?'Saving…':'Save new password'}</button>
     </form>}
     {!ready&&<button className="button secondary" onClick={()=>setActive(false)}>Close recovery</button>}
   </section>;
 }
 
-export function RecoveryRequest({ initialEmail = '' }: { initialEmail?: string }) {
+export function RecoveryRequest({ initialEmail = '', onOpen }: { initialEmail?: string; onOpen?: () => void }) {
   const [open,setOpen]=useState(false);
   const formId=useId();
   const emailInput=useRef<HTMLInputElement>(null);
-  const [email,setEmail]=useState('');const [busy,setBusy]=useState(false);const [message,setMessage]=useState('');
+  const [email,setEmail]=useState('');const [busy,setBusy]=useState(false);const [notice,setNotice]=useState<Notice|null>(null);
   useEffect(()=>{if(open)emailInput.current?.focus();},[open]);
   if(!cloud)return null;
   return <div className="recovery-request"><button type="button" className="button secondary recovery-toggle" aria-expanded={open} aria-controls={formId} onClick={()=>{
-    if(!open){setEmail(initialEmail.trim());setMessage('');}setOpen(current=>!current);
+    if(!open){setEmail(initialEmail.trim());setNotice(null);onOpen?.();}setOpen(current=>!current);
   }}>Forgot password?</button>{open&&<section id={formId} className="recovery-request-body" aria-label="Request password reset"><h3>Reset your password</h3><p>Enter your account email. We’ll send a link to choose a new password. Open it in this browser.</p><form className="account-form" onSubmit={event=>{
     event.preventDefault();if(busy)return;setBusy(true);
+    setNotice({tone:'loading',title:'Sending reset request',message:'Please wait while we contact the account service.'});
     const redirect=new URL(location.pathname,location.origin);redirect.searchParams.set('kc_recovery','1');
-    void cloud!.auth.resetPasswordForEmail(email.trim(),{redirectTo:redirect.href}).catch(()=>null).finally(()=>{
-      setEmail('');setMessage('If this address has an eligible account, recovery instructions will be sent. Open the link in this browser.');setBusy(false);
-    });
-  }}><label>Account email<input ref={emailInput} type="email" required autoComplete="email" autoCapitalize="none" spellCheck={false} value={email} onChange={event=>setEmail(event.target.value)}/></label><button className="button primary" disabled={busy}>{busy?'Sending…':'Send reset link'}</button><p role="status" aria-live="polite">{message}</p></form></section>}</div>;
+    void requestRecovery(()=>cloud!.auth.resetPasswordForEmail(email.trim(),{redirectTo:redirect.href}),accountEnvironment==='local').then(result=>{
+      setNotice(result);if(result.tone==='success')setEmail('');
+    }).finally(()=>setBusy(false));
+  }}><label>Account email<input ref={emailInput} type="email" required autoComplete="email" autoCapitalize="none" spellCheck={false} value={email} onChange={event=>setEmail(event.target.value)}/></label><button className="button primary" disabled={busy}>{busy?'Sending…':'Send reset link'}</button></form><ActionNotice notice={notice}/></section>}</div>;
 }
