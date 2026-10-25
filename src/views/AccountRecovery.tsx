@@ -1,4 +1,4 @@
-import {useEffect,useRef,useState} from 'react';
+import {useEffect,useId,useRef,useState} from 'react';
 import {cloud} from '../lib/cloud';
 import PasswordField from './PasswordField';
 
@@ -49,14 +49,20 @@ export function AccountRecovery() {
   </section>;
 }
 
-export function RecoveryRequest() {
+export function RecoveryRequest({ initialEmail = '' }: { initialEmail?: string }) {
+  const [open,setOpen]=useState(false);
+  const formId=useId();
+  const emailInput=useRef<HTMLInputElement>(null);
   const [email,setEmail]=useState('');const [busy,setBusy]=useState(false);const [message,setMessage]=useState('');
+  useEffect(()=>{if(open)emailInput.current?.focus();},[open]);
   if(!cloud)return null;
-  return <details><summary>Forgot your password?</summary><form className="account-form" onSubmit={event=>{
+  return <div className="recovery-request"><button type="button" className="button secondary recovery-toggle" aria-expanded={open} aria-controls={formId} onClick={()=>{
+    if(!open){setEmail(initialEmail.trim());setMessage('');}setOpen(current=>!current);
+  }}>Forgot password?</button>{open&&<section id={formId} className="recovery-request-body" aria-label="Request password reset"><h3>Reset your password</h3><p>Enter your account email. We’ll send a link to choose a new password. Open it in this browser.</p><form className="account-form" onSubmit={event=>{
     event.preventDefault();if(busy)return;setBusy(true);
     const redirect=new URL(location.pathname,location.origin);redirect.searchParams.set('kc_recovery','1');
     void cloud!.auth.resetPasswordForEmail(email.trim(),{redirectTo:redirect.href}).catch(()=>null).finally(()=>{
       setEmail('');setMessage('If this address has an eligible account, recovery instructions will be sent. Open the link in this browser.');setBusy(false);
     });
-  }}><label>Account email<input type="email" required autoComplete="email" value={email} onChange={event=>setEmail(event.target.value)}/></label><button className="button secondary" disabled={busy}>Request recovery link</button><p role="status">{message}</p></form></details>;
+  }}><label>Account email<input ref={emailInput} type="email" required autoComplete="email" autoCapitalize="none" spellCheck={false} value={email} onChange={event=>setEmail(event.target.value)}/></label><button className="button primary" disabled={busy}>{busy?'Sending…':'Send reset link'}</button><p role="status" aria-live="polite">{message}</p></form></section>}</div>;
 }

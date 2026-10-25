@@ -819,6 +819,11 @@ textarea[readonly] { color: #46534f; background: #f6f8f5; }
 .password-toggle { position: absolute; right: 3px; top: 50%; transform: translateY(-50%); display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 8px; background: transparent; color: var(--green-800); cursor: pointer; }
 .password-toggle:hover { background: var(--green-light); }
 .password-toggle:focus-visible { outline: 2px solid var(--green); outline-offset: -3px; }
+.recovery-request { margin: 16px 0 20px; }
+.recovery-toggle { min-height: 44px; }
+.recovery-request-body { margin-top: 16px; padding-top: 18px; border-top: 1px solid var(--line); }
+.recovery-request-body h3 { margin: 0 0 8px; font-size: 18px; }
+.recovery-request-body > p { margin-bottom: 16px; color: var(--muted); font-size: 14px; line-height: 1.6; }
 .account-form .consent-label { flex-basis: 100%; display: flex; align-items: center; }
 .consent-label input { width: 18px; height: 18px; flex-shrink: 0; }
 .package-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; }

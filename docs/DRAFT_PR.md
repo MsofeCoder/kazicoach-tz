@@ -13,3 +13,5 @@ Under the owner's autonomous release authorization, the empty launch Supabase pr
 Latest frontend increment (25 October): a seven-stop tour navigates to and highlights real workspace features. Includes responsive explanation cards, reduced motion, keyboard dismissal and preservation of unfinished practice on Close. Local browser evidence and rollback: [tour checkpoint](onboarding-2026-10-25/CHECKPOINT.md). Unit suite is now 84 passing tests; this increment is not deployed.
 
 Account password fields now offer an accessible eye toggle with masking on field exit, shared with recovery inputs. Local desktop/mobile interaction verified; no authentication behavior changed. See [password visibility evidence](password-visibility-2026-10-25/CHECKPOINT.md).
+
+Recovery entry is now a visible button inside the sign-in card, opening a labelled form with email prefill, focus and sending feedback. Request/callback security behavior is unchanged. 84 tests/types/lint/build/smoke pass; this increment awaits browser review and staging deployment.

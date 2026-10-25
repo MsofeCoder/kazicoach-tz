@@ -51,3 +51,5 @@ Changes are reversible by leaving this feature branch after saving local work. S
 - Final documentation checkpoint includes the verification evidence and `local-preview.png`.
 
 **Password visibility — 2026-10-25:** [local checkpoint](password-visibility-2026-10-25/CHECKPOINT.md). Eye toggles added to account/recovery password inputs, with automatic masking on field exit. 84 tests plus types/lint/build/smoke pass; actual desktop/mobile local UI verified. Not deployed; staging SMTP failure remains separate.
+
+**Recovery entry point — 2026-10-25:** [checkpoint](RECOVERY_BUTTON_2026-10-25.md). Visible Forgot password? button moved inside account card; accessible reset form with email prefill and focus. 84 tests/types/lint/build/smoke pass. Browser verification blocked by disabled Work browser setting; local only. Owner screenshots show confirmation delivery/sign-in; hosted recovery and MFA still pending.

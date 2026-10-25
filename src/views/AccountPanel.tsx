@@ -639,6 +639,7 @@ function AccountPanelContent() {
             </form>
           </>
         )}
+        {!session && <RecoveryRequest initialEmail={email} />}
         {cloud && (
           <>
             <button
@@ -667,7 +668,6 @@ function AccountPanelContent() {
           {message}
         </p>
       </article>
-      {!session&&<RecoveryRequest/>}
       <Plans />
       <AdminSecurity />
       <Administration />
