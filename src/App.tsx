@@ -138,12 +138,26 @@ function TopContext() {
 export default function App() {
   const { view, toast, setView } = useApp();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [guideOrigin, setGuideOrigin] = useState<View>(view);
+  const [guideScroll, setGuideScroll] = useState(0);
   const [guideOpen, setGuideOpen] = useState(() => {
     try { return shouldOfferGuide(window.localStorage, window.location.search); } catch { return false; }
   });
   const closeGuide = () => {
     try { rememberGuide(window.localStorage); } catch { /* Private storage may be unavailable. */ }
     setGuideOpen(false);
+    setView(guideOrigin);
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: guideScroll, behavior: 'instant' });
+      document.querySelector<HTMLElement>(`[data-tour-page="${guideOrigin}"]`)?.focus({ preventScroll: true });
+    });
+  };
+  const openGuide = () => { setGuideOrigin(view); setGuideScroll(window.scrollY); setGuideOpen(true); };
+  const exploreGuide = (destination: View) => {
+    try { rememberGuide(window.localStorage); } catch { /* Storage is optional. */ }
+    setGuideOpen(false);
+    setView(destination);
+    requestAnimationFrame(() => document.querySelector<HTMLElement>(`[data-tour-page="${destination}"]`)?.focus({ preventScroll: true }));
   };
 
   useEffect(() => {
@@ -153,22 +167,25 @@ export default function App() {
 
   return (
     <div className="app-shell">
-      <Sidebar onGuide={() => setGuideOpen(true)} />
+      <Sidebar onGuide={openGuide} />
       <MobileHeader onMenu={() => setMenuOpen(true)} />
-      <MobileDrawer open={menuOpen} close={() => setMenuOpen(false)} onGuide={() => setGuideOpen(true)} />
+      <MobileDrawer open={menuOpen} close={() => setMenuOpen(false)} onGuide={openGuide} />
       <div className="app-main">
         <TopContext />
         <main className="page-stage">
           <AccountRecovery />
-          {view === 'dashboard' && <Dashboard />}
-          {view === 'practice' && <Practice />}
-          {view === 'materials' && <Materials />}
-          {view === 'progress' && <Progress />}
-          {view === 'settings' && <SettingsView onGuide={() => setGuideOpen(true)} />}
+          {navigation.map(({ id }) => (view === id || (guideOpen && guideOrigin === id)) &&
+            <div key={id} data-tour-page={id} hidden={view !== id} tabIndex={-1}>
+              {id === 'dashboard' && <Dashboard />}
+              {id === 'practice' && <Practice paused={guideOpen} />}
+              {id === 'materials' && <Materials />}
+              {id === 'progress' && <Progress />}
+              {id === 'settings' && <SettingsView onGuide={openGuide} />}
+            </div>)}
         </main>
       </div>
       <BottomNav />
-      {guideOpen && <WelcomeGuide close={closeGuide} navigate={destination => { closeGuide(); setView(destination); }} />}
+      {guideOpen && <WelcomeGuide close={closeGuide} navigate={setView} explore={exploreGuide} activeView={view} />}
       {toast && <div className="toast" role="status"><BookOpenText size={17} /> {toast}</div>}
     </div>
   );

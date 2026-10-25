@@ -1,5 +1,7 @@
 # Checkpoint — local v2 review
 
+**Real-page tour — 2026-10-25:** [local evidence and rollback](onboarding-2026-10-25/CHECKPOINT.md). Seven guided stops navigate and smoothly scroll to actual features, with a spotlight and responsive explanation card. 84 tests pass; desktop/mobile browser interaction and unfinished-answer preservation verified. Local increment only; staging remains the 23 October version. SMTP/owner/device/operations launch requirements remain open.
+
 **Visual guide update — 2026-10-23:** [visual walkthrough evidence](onboarding-2026-10-23/CHECKPOINT.md). Interactive illustrated examples are live on staging (`6dfa287` / `b0a78a87`), with 79 passing tests and successful build/lint/types/smoke/artifact checks. Actual desktop and mobile-size browser interaction is verified; physical Samsung acceptance is not newly claimed. No backend/billing changes.
 
 **Onboarding update:** [guide checkpoint](onboarding-2026-10-21/CHECKPOINT.md). Five-step first-use/replay guide is deployed to staging as `f4d7be5` / `44deab20`; 79 unit tests and type/lint/build/smoke/artifact checks pass. Actual browser flow and deployed guide verified. [Owner setup steps](OWNER_SETUP_GUIDE.md) identify exactly where SMTP, account confirmation/recovery and personal MFA must be completed. No backend changes or new hosted fixtures were needed.

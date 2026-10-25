@@ -134,7 +134,7 @@ export default function Materials() {
 
       <section className="materials-grid">
         <div className="materials-left">
-          <article className="panel upload-panel">
+          <article className="panel upload-panel" data-tour="materials">
             <div className="panel-heading"><div><span className="eyebrow">Add source material</span><h2>Build a better role pack</h2></div><span className="privacy-chip"><FolderLock size={14} /> Private by default</span></div>
             <div className={`drop-zone ${dragging ? 'dragging' : ''}`} onDragOver={event => { event.preventDefault(); setDragging(true); }} onDragLeave={() => setDragging(false)} onDrop={event => { event.preventDefault(); setDragging(false); handleFiles(event.dataTransfer.files); }}>
               <input ref={inputRef} type="file" multiple accept=".txt,.md,.pdf,.docx,image/jpeg,image/png,image/webp" onChange={event => event.target.files && handleFiles(event.target.files)} hidden />
@@ -168,7 +168,7 @@ export default function Materials() {
         </div>
 
         <aside className="generator-column">
-          <article className="panel generator-card">
+          <article className="panel generator-card" data-tour="builder">
             <span className="generator-icon"><WandSparkles size={22} /></span>
             <span className="eyebrow">Question builder</span>
             <h2>Turn one source into practice</h2>

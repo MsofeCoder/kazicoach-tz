@@ -30,7 +30,7 @@ export default function Dashboard() {
 
   return (
     <div className="page dashboard-page">
-      <section className="welcome-row">
+      <section className="welcome-row" data-tour="welcome">
         <div>
           <span className="eyebrow"><span className="live-dot" /> Your private preparation</span>
           <h1>Habari, {candidate.shortName}.</h1>

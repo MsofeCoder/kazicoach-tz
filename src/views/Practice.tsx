@@ -42,7 +42,7 @@ function PanelIdentity({ category, questionIndex, voiceStyle, onVoiceStyle }: { 
   );
 }
 
-function OralPractice() {
+function OralPractice({ paused = false }: { paused?: boolean }) {
   const {premium}=useAccount();
   const { state, setState, recordAttempt, notify, practiceCategory } = useApp();
   const [category, setCategory] = useState<'all' | QuestionCategory>(practiceCategory);
@@ -65,10 +65,17 @@ function OralPractice() {
   const updateVoiceStyle = (voiceStyle: VoiceStyle) => setState(current => ({ ...current, preferences: { ...current.preferences, voiceStyle } }));
 
   useEffect(() => {
-    if (result) return;
+    if (result || paused) return;
     const timer = window.setInterval(() => setElapsed(value => value + 1), 1000);
     return () => window.clearInterval(timer);
-  }, [result, index]);
+  }, [result, index, paused]);
+
+  useEffect(() => {
+    if (!paused) return;
+    recognitionRef.current?.stop?.();
+    setListening(false);
+    window.speechSynthesis?.cancel();
+  }, [paused]);
 
   useEffect(() => () => {
     recognitionRef.current?.stop?.();
@@ -413,7 +420,7 @@ function WrittenPractice() {
   );
 }
 
-export default function Practice() {
+export default function Practice({ paused = false }: { paused?: boolean }) {
   const { practiceMode, setPracticeMode,trialUsed,setView } = useApp();
   const {premium,packages}=useAccount();
   const limit=packages.find(p=>p.id==='basic')?.free_questions??5;
@@ -422,13 +429,13 @@ export default function Practice() {
     <div className="page practice-page">
       <section className="page-title-row">
         <div><span className="eyebrow">Focused rehearsal</span><h1>Practice room</h1><p>Train for clarity, evidence and calm delivery—not memorised perfection.</p></div>
-        <div className="mode-switch" role="group" aria-label="Practice mode">
+        <div className="mode-switch" data-tour="practice" role="group" aria-label="Practice mode">
           <button className={practiceMode === 'oral' ? 'active' : ''} onClick={() => setPracticeMode('oral')}><Mic2 size={17} /> Oral panel</button>
           <button className={practiceMode === 'written' ? 'active' : ''} onClick={() => setPracticeMode('written')}><BookOpen size={17} /> Written test</button>
         </div>
       </section>
       {!premium&&<p className="trial-note" role="status">Free trial: {Math.max(0,limit-trialUsed)} scored questions remaining. No account required.</p>}
-      {practiceMode === 'oral' ? <OralPractice /> : <WrittenPractice />}
+      {practiceMode === 'oral' ? <OralPractice paused={paused} /> : <WrittenPractice />}
     </div>
   );
 }

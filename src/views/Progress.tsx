@@ -52,7 +52,7 @@ export default function Progress() {
         <button className="button primary" onClick={() => startPractice('oral')}><Mic2 size={17} /> Continue practice</button>
       </section>
 
-      <section className="progress-hero-grid">
+      <section className="progress-hero-grid" data-tour="progress">
         <article className="panel readiness-overview">
           <div className="progress-ring-large" style={{ '--progress': `${readiness * 3.6}deg` } as React.CSSProperties}><div><strong>{readiness}<span>%</span></strong><small>Readiness</small></div></div>
           <div className="readiness-detail"><span className="eyebrow">Current estimate</span><h2>{readiness >= 75 ? 'You are building panel-level coverage.' : 'The foundation is taking shape.'}</h2><p>Weighted from recent answer scores and practice volume. This is a coaching measure, not a hiring prediction.</p><div className="mini-stats"><span><strong>{average || '—'}</strong>Avg. score</span><span><strong>{attempts.length}</strong>Attempts</span><span><strong>{strong}</strong>Strong</span></div></div>

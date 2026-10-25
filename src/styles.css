@@ -825,56 +825,55 @@ textarea[readonly] { color: #46534f; background: #f6f8f5; }
 .package-card { display: flex; flex-direction: column; gap: 10px; }
 .package-card .button { margin-top: auto; padding: 10px 12px; min-height: 44px; text-align: center; }
 @media(max-width: 650px) { .package-grid { grid-template-columns: 1fr; } .account-form .button { width: 100%; } }
-/* Native modal keeps keyboard focus and background interaction inside the guide. */
-.welcome-guide { position: fixed; inset: 0; margin: auto; width: min(920px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); overflow: auto; padding: 0; border: 1px solid #dce7df; border-radius: 24px; color: #183c36; background: #fffefa; box-shadow: 0 24px 90px #062d3540; }
-.welcome-guide::backdrop { background: #062e38b8; }
-.guide-top { display: flex; align-items: center; justify-content: space-between; padding: 16px 22px; border-bottom: 1px solid #e2e9df; }
-.guide-top > span { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; font-size: 14px; font-weight: 750; }
-.guide-top b { font-size: 11px; font-weight: 600; color: #4f6c61; background: #edf3eb; padding: 5px 9px; border-radius: 6px; }
-.guide-body { display: grid; grid-template-columns: 1fr 1.1fr; border-top: 1px solid #e2e9df; border-bottom: 1px solid #e2e9df; }
-.guide-content { padding: 38px 32px 24px; align-self: center; }
-.guide-content h2 { font-size: clamp(25px, 5vw, 32px); line-height: 1.16; margin: 13px 0 18px; letter-spacing: -.7px; }
-.guide-content h2:focus { outline: none; }
-.guide-content > p { font-size: 16px; line-height: 1.65; }
-.guide-tip { display: flex; align-items: flex-start; gap: 12px; padding: 14px; margin: 20px 0; border-radius: 12px; background: #f6f0dd; }
-.guide-tip svg { flex-shrink: 0; margin-top: 3px; }
-.guide-tip p { font-size: 14px; line-height: 1.6; margin: 0; }
-.guide-steps { display: flex; justify-content: space-around; gap: 4px; padding: 14px 24px; background: #fffefa; }
-.guide-steps button { display: flex; align-items: center; justify-content: center; gap: 7px; min-height: 44px; border: 0; border-radius: 8px; color: #546c60; background: transparent; cursor: pointer; padding: 4px 8px; }
-.guide-steps button > span { display: grid; place-items: center; width: 27px; height: 27px; border: 1px solid #cedbd0; border-radius: 50%; font-size: 12px; }
-.guide-steps button small { font-size: 11px; font-weight: 650; }
-.guide-steps button[aria-current="step"] { color: #07594c; background: #edf5ef; }
-.guide-steps button[aria-current="step"] > span { background: #07594c; border-color: #07594c; color: white; }
-.guide-count { font-size: 14px; font-weight: 750; margin: 0; color: #183c36; }
-.guide-count span { font-weight: 400; color: #66736f; }
-.guide-footer { position: sticky; bottom: 0; display: flex; align-items: center; gap: 12px; justify-content: space-between; padding: 18px 28px; background: #fffefa; z-index: 2; }
-.guide-footer .button { min-height: 44px; }
-.guide-page-link { display: inline-flex; align-items: center; gap: 7px; background: none; border: 0; color: #07594c; cursor: pointer; padding: 4px 0; min-height: 44px; font-size: 13px; font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
+/* The modal owns focus; a viewport spotlight reveals the actual destination. */
 .guide-entry { margin-top: 8px; }
 .guide-settings { background: #f5f9f3; }
-.guide-preview { padding: 24px; min-width: 0; background: radial-gradient(ellipse at 15% 0%, #d9ecd4, transparent 70%), #edf4eb; }
-.guide-preview-caption { display: flex; align-items: center; gap: 6px; font-size: 9px; font-weight: 800; letter-spacing: 1.4px; color: #3d6657; }
-.guide-preview-caption > span:last-child { margin-left: auto; font-size: 10px; letter-spacing: 0; font-weight: 500; }
-.guide-preview-dot { width: 6px; height: 6px; border-radius: 50%; background: #0f7b68; }
-.guide-demo-art { display: grid; place-items: center; min-height: 185px; padding: 16px 0; }
-.guide-roadmap-art { width: 230px; height: 150px; position: relative; display: grid; place-items: center; }
-.guide-orbit { width: 106px; height: 106px; display: grid; place-items: center; border-radius: 28px; background: #07594c; color: #f2ce74; transform: rotate(-7deg); box-shadow: 0 16px 28px #0e4d402b; }
-.guide-float { position: absolute; display: grid; place-items: center; width: 48px; height: 48px; border-radius: 14px; background: #fffefa; color: #07594c; box-shadow: 0 8px 18px #0e4d4017; }
-.guide-float-a { top: 5px; left: 3px; transform: rotate(-9deg); }.guide-float-b { right: 5px; top: 0; transform: rotate(9deg); }.guide-float-c { right: 4px; bottom: 0; color: #866018; background: #fff2ca; }
-.guide-demo-options { display: flex; gap: 5px; padding: 4px; border: 1px solid #d3e0d3; border-radius: 12px; background: #ffffff80; }
-.guide-demo-options button { flex: 1; min-height: 44px; min-width: 0; padding: 7px 5px; border: 0; border-radius: 8px; background: transparent; color: #456355; font-size: 12px; font-weight: 650; cursor: pointer; }
-.guide-demo-options button[aria-pressed="true"] { color: #fff; background: #07594c; box-shadow: 0 2px 4px #063d321a; }
-.guide-demo-detail { min-height: 75px; display: flex; align-items: center; }.guide-demo-detail p { font-size: 13px; line-height: 1.6; margin: 12px 0; }
-.guide-demo-action { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 44px; width: 100%; background: #fffefa; color: #07594c; border: 1px solid #c5d6c7; border-radius: 10px; cursor: pointer; font-size: 12px; font-weight: 700; }
-.guide-demo-reveal { display: flex; gap: 8px; padding-top: 12px; font-size: 12px; line-height: 1.6; }.guide-demo-reveal svg { flex-shrink: 0; margin-top: 2px; }
-.guide-demo-footnote { font-size: 10px; line-height: 1.5; margin: 16px 0 0; color: #567064; }
-.guide-document-art { position: relative; width: 160px; height: 155px; }.guide-paper-back { position: absolute; inset: 0 10px 0 0; background: #c8ddcb; border-radius: 12px; transform: rotate(-9deg); }
-.guide-paper { position: absolute; inset: 0 4px 0 4px; display: flex; flex-direction: column; align-items: flex-start; gap: 7px; background: #fffefa; border: 1px solid #d0ddd1; padding: 13px 18px; border-radius: 12px; transform: rotate(3deg); box-shadow: 0 10px 22px #063d3212; }.guide-paper > strong { font-size: 14px; }.guide-paper i { width: 90%; height: 4px; background: #e0e9dd; border-radius: 2px; }.guide-paper i:nth-of-type(2) { width: 65%; }.guide-paper > span { display: flex; gap: 4px; align-items: center; font-size: 9px; margin-top: auto; }
-.guide-art-seal { position: absolute; right: -10px; bottom: 4px; display: grid; place-items: center; width: 38px; height: 38px; background: #f5cf6d; border: 4px solid #edf4eb; border-radius: 50%; color: #07594c; }
-.guide-practice-art { display: flex; flex-direction: column; align-items: center; gap: 12px; }.guide-demo-symbol { display: grid; place-items: center; width: 65px; height: 65px; background: #fffefa; border: 1px solid #d4e2d2; border-radius: 20px; color: #07594c; }.guide-sound-bars { display: flex; align-items: center; justify-content: center; gap: 5px; height: 54px; }.guide-sound-bars i { background: #0f7b68; border-radius: 8px; transition: height .2s; }.guide-practice-art > span:last-child { font-size: 11px; color: #456355; }
-.guide-growth-art { position: relative; display: flex; align-items: flex-end; justify-content: space-around; width: 100%; padding: 15px 0; }.guide-growth-art > span:not(.guide-growth-line) { z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 12px; color: #07594c; background: #fffefa; border: 1px solid #d4e2d2; border-radius: 16px; padding: 16px 10px; }.guide-growth-art > span:nth-child(3) { margin-bottom: 22px; }.guide-growth-art > span:nth-child(4) { margin-bottom: 44px; background: #07594c; color: #fffefa; }.guide-growth-art small { font-size: 10px; }.guide-growth-line { position: absolute; top: 70px; left: 12%; width: 75%; height: 3px; background: #c7dabc; transform: rotate(-17deg); }
-.guide-privacy-art { display: flex; align-items: center; gap: 13px; color: #07594c; }.guide-privacy-art > span { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 18px 12px; background: #fffefa; border: 1px solid #d4e2d2; border-radius: 18px; }.guide-privacy-art small { font-size: 10px; }
-.welcome-guide button:focus-visible { outline: 3px solid #b77e12; outline-offset: 3px; }
-@media (max-width: 700px) { .guide-body { grid-template-columns: 1fr; }.guide-content { padding: 24px; }.guide-content h2 { font-size: 27px; }.guide-preview { padding: 18px 24px; }.guide-demo-art { min-height: 135px; padding: 10px 0; }.guide-roadmap-art { height: 125px; }.guide-orbit { width: 85px; height: 85px; border-radius: 23px; }.guide-document-art { transform: scale(.8); margin: -12px 0; }.guide-demo-detail { min-height: 0; }.guide-demo-footnote { margin-top: 10px; }.guide-steps { padding: 8px; }.guide-steps button { flex-direction: column; gap: 4px; min-width: 44px; }.guide-steps button small { font-size: 9px; }.guide-footer { padding: 12px 18px; }.guide-tip { margin: 16px 0 0; } }
-@media (max-width: 380px) { .welcome-guide { width: calc(100vw - 16px); border-radius: 18px; }.guide-top { padding: 12px 16px; }.guide-top b { display: none; }.guide-content, .guide-preview { padding: 18px; }.guide-footer { gap: 6px; padding: 12px; }.guide-footer .button { padding: 0 12px; }.guide-privacy-art { gap: 8px; }.guide-privacy-art > span { padding: 14px 9px; } }
-@media (prefers-reduced-motion: reduce) { .welcome-guide *, .welcome-guide *::before, .welcome-guide *::after { transition: none; animation: none; scroll-behavior: auto; } }
+[data-tour] { scroll-margin-top: 100px; }
+[data-tour-page][hidden] { display: none; }
+[data-tour-page]:not([hidden]) { animation: tourPageIn .35s ease both; }
+.feature-tour { position: fixed; inset: 0; width: 100%; height: 100%; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; background: transparent; color: var(--ink); overflow: hidden; }
+.feature-tour::backdrop { background: #062e3814; }
+.tour-shade { position: absolute; inset: 0; background: #062e38a8; transition: opacity .2s; }
+.tour-shade.has-spotlight { opacity: 0; }
+.tour-spotlight { position: fixed; border: 2px solid #f0ce76; border-radius: 16px; box-shadow: 0 0 0 100vmax #062e38a8, 0 0 0 5px #f0ce762e; pointer-events: none; transition: top .32s ease, left .32s ease, width .32s ease, height .32s ease; }
+.tour-spotlight > span { position: absolute; left: 10px; top: -32px; border-radius: 7px; padding: 6px 10px; max-width: calc(100vw - 40px); color: #fff8e5; background: #073c35; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.tour-card { position: fixed; right: 28px; bottom: 28px; width: 410px; max-width: calc(100% - 32px); max-height: calc(100dvh - 32px); overflow-y: auto; border: 1px solid #dce7df; border-radius: 22px; padding: 18px 24px 0; background: #fffefa; box-shadow: 0 24px 90px #062d3540; }
+.tour-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.tour-header > span { display: flex; align-items: center; gap: 8px; color: #376452; font-size: 10px; font-weight: 800; letter-spacing: 1.3px; }
+.tour-header .icon-button { width: 44px; height: 44px; flex-shrink: 0; }
+.tour-dots { display: flex; margin: 0 -4px 8px; }
+.tour-dots button { display: grid; place-items: center; min-width: 36px; min-height: 36px; flex: 1; padding: 6px 4px; border: 0; background: transparent; cursor: pointer; }
+.tour-dots span { display: block; height: 4px; width: 100%; border-radius: 4px; background: #dce7df; transition: background .2s; }
+.tour-dots button[aria-current='step'] span { background: #0f7b68; }
+.tour-copy { animation: tourCopyIn .26s ease both; }
+.tour-copy h2 { font-size: 25px; letter-spacing: -.6px; line-height: 1.15; margin: 10px 0 12px; }
+.tour-copy h2:focus { outline: none; }
+.tour-copy > p { font-size: 14px; line-height: 1.65; margin: 0; color: #465f55; }
+.tour-tip { display: flex; align-items: flex-start; gap: 9px; margin-top: 16px; border-radius: 10px; padding: 12px; background: #f4f0df; color: #655322; }
+.tour-tip svg { flex-shrink: 0; margin-top: 2px; }
+.tour-tip p { margin: 0; font-size: 12px; line-height: 1.6; }
+.tour-explore { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; border: 0; padding: 6px 0; margin-top: 8px; background: none; color: #07594c; font-size: 12px; font-weight: 750; cursor: pointer; text-decoration: underline; text-underline-offset: 4px; }
+.tour-footer { position: sticky; bottom: 0; display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 16px 0 18px; border-top: 1px solid #e2e9df; background: #fffefa; }
+.tour-footer .button { min-height: 44px; }
+.tour-count { white-space: nowrap; font-size: 12px; font-weight: 700; color: #52695e; }
+.feature-tour button:focus-visible { outline: 3px solid #b77e12; outline-offset: 2px; }
+@keyframes tourPageIn { from { opacity: .4; transform: translateY(9px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes tourCopyIn { from { opacity: 0; transform: translateX(8px); } to { opacity: 1; transform: translateX(0); } }
+@media (min-width: 1100px) { .tour-card-builder { left: calc(var(--sidebar) + 28px); right: auto; } }
+@media (max-width: 700px) {
+  [data-tour] { scroll-margin-top: 96px; }
+  .tour-card { right: 12px; bottom: max(12px, env(safe-area-inset-bottom)); width: calc(100% - 24px); max-width: none; max-height: calc(100dvh - 160px); border-radius: 18px; padding: 10px 18px 0; }
+  .tour-header > span { font-size: 9px; }
+  .tour-copy h2 { font-size: 22px; margin: 6px 0 10px; }
+  .tour-copy > p { font-size: 13px; line-height: 1.55; }
+  .tour-tip { margin-top: 12px; padding: 10px; }
+  .tour-tip p { font-size: 11px; }
+  .tour-dots { margin-bottom: 4px; }
+  .tour-footer { padding: 12px 0; }
+  .tour-footer .button { padding-left: 12px; padding-right: 12px; }
+}
+@media (max-height: 520px) and (min-width: 701px) { .tour-card { bottom: 12px; right: 12px; max-height: calc(100dvh - 24px); } }
+@media (prefers-reduced-motion: reduce) {
+  .tour-spotlight, .tour-shade, .tour-dots span { transition: none; }
+  .tour-copy, [data-tour-page]:not([hidden]) { animation: none; }
+}

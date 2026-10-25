@@ -69,7 +69,7 @@ export default function SettingsView({ onGuide }: { onGuide: () => void }) {
             <div className="settings-note"><Info size={17} /><p>API keys must be set in the hosting dashboard, never in browser code or local storage. Free quotas vary by project/model and have no guaranteed SLA.</p></div>
           </article>
 
-          <article className="panel settings-section danger-section">
+          <article className="panel settings-section danger-section" data-tour="backup">
             <div className="settings-heading"><span><HardDrive size={19} /></span><div><h2>Your local data</h2><p>Your private workspace stays in this browser. Account data has separate controls above.</p></div></div>
             <div className="data-summary"><span><strong>{state.attempts.length}</strong><small>Attempts</small></span><span><strong>{state.materials.length}</strong><small>Materials</small></span><span><strong>{state.customQuestions.length}</strong><small>Custom cards</small></span><span><strong>{state.xp}</strong><small>XP</small></span></div>
             <div className="data-actions"><button className="button secondary" onClick={exportData}><FileJson size={16} /> Export JSON</button><button className="button danger" onClick={reset}><Trash2 size={16} /> Reset all data</button></div>

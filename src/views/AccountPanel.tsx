@@ -436,7 +436,7 @@ function AccountPanelContent() {
   return (
     <>
       <article className="panel settings-section account-section">
-        <h2>Optional account &amp; selected progress</h2>
+        <h2 data-tour="account">Optional account &amp; selected progress</h2>
         {!cloud ? (
           <p>
             Private mode is active. Accounts require an
