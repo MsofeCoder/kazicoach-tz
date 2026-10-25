@@ -13,6 +13,17 @@ describe('Public coaching role pack', () => {
     oralQuestions.forEach(question => expect(question.keywords.length).toBe(question.keyPoints.length));
   });
 
+  it('keeps written prompts distinct from oral prompts and answer keys valid', () => {
+    const oralPrompts = new Set(oralQuestions.map(question => question.question.trim()));
+    writtenQuestions.forEach(question => {
+      expect(oralPrompts.has(question.question.trim()), question.id).toBe(false);
+      expect(new Set(question.options).size, question.id).toBe(question.options.length);
+      expect(question.correctIndex, question.id).toBeGreaterThanOrEqual(0);
+      expect(question.correctIndex, question.id).toBeLessThan(question.options.length);
+      expect(Number.isInteger(question.correctIndex), question.id).toBe(true);
+    });
+  });
+
   it('provides exactly five points in each authored mnemonic', () => {
     Object.values(memoryAids).forEach(aid => expect(aid.points).toHaveLength(5));
   });

@@ -21,3 +21,5 @@ Account feedback distinguishes local test accounts from staging, maps known fail
 Recovery resend protection reserves a 65-second timestamp-only cooldown before calling the SDK, preventing ordinary immediate retries that can invalidate the prior verifier on rate-limit failure. Includes a mocked SDK reproduction, missing-verifier guidance and browser reload evidence. 97 tests pass; hosted MCP inspection was read-only and no deployment performed.
 
 Staging release: owner-authorized deployment dee80769 publishes source f87924c to the staging alias. See [deployment evidence and rollback](staging-release-2026-10-25/CHECKPOINT.md). Real owner password replacement and production launch acceptance remain outstanding.
+
+Browser acceptance found written-01 copied an oral personal-experience stem despite regulatory-role choices. Corrected stem/source without changing IDs or scores; bank integrity regression and 98 tests pass. [QA evidence](acceptance-2026-10-25/CHECKPOINT.md). Fix verified locally; staging still dee80769.

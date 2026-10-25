@@ -373,11 +373,11 @@ export const oralQuestions: OralQuestion[] = [
 export const writtenQuestions: WrittenQuestion[] = [
   {
     id: 'written-01', category: 'role',
-    question: 'Describe a real project or learning experience and what it taught you for inspection work.',
+    question: 'Which statement best describes TAEC’s regulatory role?',
     options: ['It operates every radiation facility in Tanzania', 'It authorizes and inspects practices and can require corrective action', 'It only trains radiation workers', 'It only advises private hospitals'],
     correctIndex: 1,
     explanation: 'TAEC’s regulatory role includes authorization through registration/licensing, safety review, inspection, enforcement, and follow-up. Primary responsibility for safe operation remains with the licensee.',
-    source: 'Coaching template — replace with your own verified facts'
+    source: 'TAEC — Functions and responsibilities (Regulatory Function); https://www.taec.go.tz/pages/functions-and-responsibilities'
   },
   {
     id: 'written-02', category: 'technical',
